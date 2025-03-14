@@ -5,5 +5,5 @@ NumPy:       1.23.5
 OpenCV-py:   4.9.1.78
 PyOpenGL:    3.1.5
 
-TensorRT:    10.9 GA
+TensorRT:    10.9.0.34 GA
 ONNX:        1.17.0
