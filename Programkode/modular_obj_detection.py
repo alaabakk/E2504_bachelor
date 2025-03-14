@@ -3,9 +3,6 @@ import numpy as np
 import cv2
 
 
-
-
-
 def init_zed():
     # Create a Camera object
     zed = sl.Camera()
@@ -71,7 +68,7 @@ def init():
 def process_objects(objects, img_cv):
     if objects.is_new:
         obj_array = objects.object_list
-        print(f"{len(obj_array)} Object(s) detected")
+        #print(f"{len(obj_array)} Object(s) detected")
 
         for obj in obj_array:
             topleft = obj.bounding_box_2d[0]
@@ -90,7 +87,6 @@ def process_objects(objects, img_cv):
 def main_loop(zed, obj_runtime_param):
     objects = sl.Objects()
     
-    print("Window initialized")
     
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
