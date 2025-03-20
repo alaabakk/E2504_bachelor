@@ -22,7 +22,7 @@ def init_zed():
 
     return zed
 
-    
+
 def init_object_detection(zed):
     # Object detection configuration
     obj_param = sl.ObjectDetectionParameters()
@@ -51,7 +51,6 @@ def init_object_detection(zed):
 def init_CV_window():
     cv2.namedWindow("ZED", cv2.WINDOW_NORMAL)
 
-
 # Samler alle initialiseringsfunksjonene i en funksjon 
 def init():
     zed = init_zed()
@@ -65,7 +64,7 @@ def init():
 
 
 
-def process_objects(objects, img_cv):
+def process_objects(objects, img_cv, depth_map, point_cloud):
     if objects.is_new:
         obj_array = objects.object_list
         #print(f"{len(obj_array)} Object(s) detected")
@@ -73,14 +72,36 @@ def process_objects(objects, img_cv):
         for obj in obj_array:
             topleft = obj.bounding_box_2d[0]
             bottomright = obj.bounding_box_2d[2]
+            label = obj.label
+            conf = obj.confidence
+            velo = np.round(np.sqrt(obj.velocity[0]**2 + obj.velocity[1]**2 + obj.velocity[2]**2) * 3.6, 3)
+            distance = calculateDistance("depth", topleft, bottomright, depth_map, point_cloud)
 
-            cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
+            draw_bounding_box_and_label(img_cv, topleft, bottomright, label, conf, velo, distance)
 
-            V = obj.velocity
-            V_tot = np.round(np.sqrt(V[0]**2 + V[1]**2 + V[2]**2) * 3.6, 3)
 
-            label = f"{obj.label} ({int(obj.confidence)}% Velo: {V_tot} km/h)"
-            cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+
+def draw_bounding_box_and_label(img_cv, topleft, bottomright, label, conf, velo, distance):
+    cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
+    cv2.rectangle(img_cv, (int(topleft[0]-1), int(topleft[1]-23)), (int(bottomright[0]+1), int(topleft[1])), (0, 255, 0), -1)
+
+    label = f"{label} Conf: {int(conf)}%  Dist: {distance:.2f}m"
+    cv2.putText(img_cv, label, (int(topleft[0]+4), int(topleft[1]-6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+
+
+def calculateDistance(Type, topleft, bottomright, depth_map, point_cloud):
+    middle = (int(topleft[0] + (bottomright[0] - topleft[0]) / 2), int(topleft[1] + (bottomright[1] - topleft[1]) / 2))
+
+    if Type == "depth":
+        depth_value = depth_map.get_value(middle[0], middle[1])
+        _, distance = depth_value
+        return distance
+    elif Type == "point_cloud":
+        point3D = point_cloud.get_value(middle[0], middle[1])
+        x, y, z = point3D[1][:3]
+        distance = np.sqrt(x**2 + y**2 + z**2)
+        return distance
+
 
 
 
@@ -90,17 +111,25 @@ def main_loop(zed, obj_runtime_param):
     
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
-            img = sl.Mat()
-            zed.retrieve_image(img, sl.VIEW.LEFT)
-            img_cv = np.array(img.get_data(), dtype=np.uint8)
+            image = sl.Mat()
+            depth_map = sl.Mat()
+            point_cloud = sl.Mat()
 
+            zed.retrieve_image(image, sl.VIEW.LEFT)
+            zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
+            zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
             zed.retrieve_objects(objects, obj_runtime_param)
-            process_objects(objects, img_cv)
+
+            img_cv = np.array(image.get_data(), dtype=np.uint8)
+
+            process_objects(objects, img_cv, depth_map, point_cloud)
+
 
             cv2.imshow("Object detection with ZED", img_cv)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
 
     zed.disable_object_detection()
     zed.close()
