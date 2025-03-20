@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import pyzed.sl as sl
 import numpy as np
 import cv2
+import os
 
 
 def init_zed():
@@ -27,12 +28,16 @@ def init_zed():
 def init_yolo():
     # Initialize the YOLO model
     print("Initializing YOLO model...")
-    model = YOLO("model.onnx", task="detect")
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the path to the model file
+    model_path = os.path.join(script_dir, "Models", "yolov8s.engine")
+    model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
 
 
-def process_yolo_results(results, img_cv):
+def process_yolo_results(results, img_cv, depth_map, point_cloud):
     # Define the classes to keep
     names = {
         0: 'person',
@@ -53,24 +58,46 @@ def process_yolo_results(results, img_cv):
                 x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
                 confidence = box.conf[0]  # Confidence score
                 label = names[label_id]  # Get class label from the dictionary
+                distance = calculateDistance("depth", (x1, y1), (x2, y2), depth_map, point_cloud)
 
                 # Draw bounding box
                 cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.rectangle(img_cv, (int(x1-1), int(y1-23)), (int(x2+1), int(y1)), (0, 255, 0), -1)
 
                 # Add label and confidence
-                label_text = f"{label} ({confidence:.2f})"  # Updated to show object name
-                cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                label = f"{label} Conf: {int(confidence*100)}%  Dist: {distance:.2f}m"
+                cv2.putText(img_cv, label, (x1, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
-                
+
+def calculateDistance(Type, topleft, bottomright, depth_map, point_cloud):
+    middle = (int(topleft[0] + (bottomright[0] - topleft[0]) / 2), int(topleft[1] + (bottomright[1] - topleft[1]) / 2))
+
+    if Type == "depth":
+        depth_value = depth_map.get_value(middle[0], middle[1])
+        _, distance = depth_value
+        return distance
+    elif Type == "point_cloud":
+        point3D = point_cloud.get_value(middle[0], middle[1])
+        x, y, z = point3D[1][:3]
+        distance = np.sqrt(x**2 + y**2 + z**2)
+        return distance
+       
 
 def main_loop(zed, model):
     # Create a ZED Mat object to store images
-    zed_image = sl.Mat()
+ 
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
             # Retrieve the left image from the ZED camera
+            zed_image = sl.Mat()
+            depth_map = sl.Mat()
+            point_cloud = sl.Mat()
+
             zed.retrieve_image(zed_image, sl.VIEW.LEFT)
+            zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
+            zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
+            
             img_cv = np.array(zed_image.get_data(), dtype=np.uint8)
 
             # Convert RGBA to RGB
@@ -80,7 +107,7 @@ def main_loop(zed, model):
             results = model.predict(img_cv, stream=True)
 
             # Process results and draw on the frame
-            process_yolo_results(results, img_cv)
+            process_yolo_results(results, img_cv, depth_map, point_cloud)
 
             # Display the frame
             cv2.imshow("YOLO Object Detection with ZED", img_cv)
