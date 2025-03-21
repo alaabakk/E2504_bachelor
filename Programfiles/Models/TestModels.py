@@ -2,7 +2,7 @@ from ultralytics import YOLO
  
  
 #print("Sarting to predict")
-model = YOLO("yolov5lu.engine", task="detect")
+model = YOLO("yolo11s.pt", task="detect")
  
  
  
