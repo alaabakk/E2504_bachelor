@@ -27,7 +27,10 @@ def init_zed():
 def init_yolo():
     # Initialize the YOLO model
     print("Initializing YOLO model...")
-    model = YOLO("model.onnx", task="detect")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the path to the model file
+    model_path = os.path.join(script_dir, "Models/yolov8s.pt")
+    model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
 
