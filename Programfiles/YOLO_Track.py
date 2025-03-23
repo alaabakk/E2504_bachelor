@@ -4,9 +4,6 @@ import numpy as np
 import cv2
 import os
 import threading
-import serial
-
-arduino = serial.Serial('COM3', 9600, timeout=1)
 
 ## Global variables
 active_objects = []
@@ -40,7 +37,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "yolov8s.engine")
+    model_path = os.path.join(script_dir, "Models/yolov8s.engine")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -98,8 +95,6 @@ def process_yolo_results(results, img_cv):
                     # Add label and confidence
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-                    # Send the coordinates of the object to the Arduino
-                    send_coordinates_to_arduino(x1, y1, x2, y2)
 
                 else:
                                         # Draw bounding box
@@ -124,14 +119,6 @@ def print_active_objects(active_objects):
             print("\nNo active objects detected.")
 
     last_active_objects = active_objects
-
-def send_coordinates_to_arduino(x1, y1, x2, y2):
-    # Calculate the center of the bounding box
-    x_center = ((x1 + x2) / 2) + x1
-    y_center = ((y1 + y2) / 2) + y1
-
-    # Send the coordinates to the Arduino
-    arduino.write(f"{x_center}\n".encode())
 
 
 def main_loop(zed, model):
