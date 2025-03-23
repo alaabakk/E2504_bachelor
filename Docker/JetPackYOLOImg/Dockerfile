@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/l4t-jetpack:r36.4.0
+FROM dustynv/l4t-pytorch:r36.4.0
 
 ARG L4T_MAJOR_VERSION=36
 ARG L4T_MINOR_VERSION=4
@@ -24,5 +24,5 @@ RUN ln -sf /usr/lib/aarch64-linux-gnu/tegra/libv4l2.so.0 /usr/lib/aarch64-linux-
 WORKDIR /usr/local/zed
 
 RUN python3 -m pip install PyOpenGL && \
+    python3 -m pip install ultralytics && \
     git clone https://github.com/alaabakk/E2504_bachelor
-    
