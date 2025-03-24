@@ -21,18 +21,18 @@ try:
     while True:
         # Your servo movement logic
         print("Left")
-        pwm1.ChangeDutyCycle(5)
         pwm2.ChangeDutyCycle(5)
+        pwm1.ChangeDutyCycle(5)
         time.sleep(1)
 
         print("Right")
-        pwm1.ChangeDutyCycle(10)
         pwm2.ChangeDutyCycle(10)
+        pwm1.ChangeDutyCycle(10)
         time.sleep(1)
 
         print("Center")
-        pwm1.ChangeDutyCycle(7.5)
         pwm2.ChangeDutyCycle(7.5)
+        pwm1.ChangeDutyCycle(7.5)
         time.sleep(1)
 
 except KeyboardInterrupt:
