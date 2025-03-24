@@ -2,8 +2,8 @@ import Jetson.GPIO as GPIO
 import time
 
 # Use physical pin numbers
-servo_pin1 = 15  # PWM7
-servo_pin2 = 33  # PWM5
+servo_pin1 = 32  
+servo_pin2 = 33  
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(servo_pin1, GPIO.OUT)
@@ -21,18 +21,18 @@ try:
     while True:
         # Your servo movement logic
         print("Left")
-        pwm2.ChangeDutyCycle(5)
         pwm1.ChangeDutyCycle(5)
+        pwm2.ChangeDutyCycle(5)
         time.sleep(1)
 
         print("Right")
-        pwm2.ChangeDutyCycle(10)
         pwm1.ChangeDutyCycle(10)
+        pwm2.ChangeDutyCycle(10)
         time.sleep(1)
 
         print("Center")
-        pwm2.ChangeDutyCycle(7.5)
         pwm1.ChangeDutyCycle(7.5)
+        pwm2.ChangeDutyCycle(7.5)
         time.sleep(1)
 
 except KeyboardInterrupt:
