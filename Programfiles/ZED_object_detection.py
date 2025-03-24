@@ -148,20 +148,19 @@ def process_objects(objects, img_cv, depth_map, point_cloud, img):
             distance = calculateDistance(middle, depth_map, point_cloud, img)
 
             if selected_object == str(obj.id):
-
+                # Draw red bounding box and label
                 cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 0, 255), 2)
-
                 label = f"{obj.id} ({int(obj.confidence)}% Velo: {V_tot} km/h) dist: {distance:.2f}m"
                 cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                # Draw a dot with a diameter of 3 pixels at (x, y)
+                # Draw a dot with a diameter of 3 pixels at the center of the object
                 cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
 
             else:
+                # Draw green bounding box and label
                 cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
-
                 label = f"{obj.id} ({int(obj.confidence)}% Velo: {V_tot} km/h) dist: {distance:.2f}m"
                 cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                # Draw a dot with a diameter of 3 pixels at (x, y)
+                # Draw a dot with a diameter of 3 pixels at the center of the object
                 cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
 
     return active_objects

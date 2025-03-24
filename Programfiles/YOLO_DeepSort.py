@@ -5,7 +5,7 @@ from TrackerDeepSort import Tracker
 import pyzed.sl as sl
 import numpy as np
 
-MODEL_PATH = "Models/yolov5nu.pt"
+MODEL_PATH = "Models/yolov8s.pt"
 
 def init_zed():
     # Create a Camera object
@@ -33,7 +33,7 @@ def main():
 
     # Initialize YOLO detector and tracker
     detector = YoloDetector(model_path=MODEL_PATH, confidence=0.6)
-    tracker = Tracker(max_age=20, min_hits=2)
+    tracker = Tracker()
 
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
