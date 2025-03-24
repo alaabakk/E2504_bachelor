@@ -32,8 +32,8 @@ def main():
     zed = init_zed()
 
     # Initialize YOLO detector and tracker
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.6)
-    tracker = Tracker()
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.75)
+    tracker = Tracker(max_age=20, min_hits=2)
 
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
@@ -67,7 +67,7 @@ def main():
                                   (int(bounding_box[2]), int(bounding_box[3])), (0, 0, 255), 2)
                     cv2.putText(frame, f"{str(tracking_id)}", 
                                 (int(bounding_box[0]), int(bounding_box[1] - 10)), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
 
                 
