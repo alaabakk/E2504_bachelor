@@ -23,7 +23,6 @@ RUN ln -sf /usr/lib/aarch64-linux-gnu/tegra/libv4l2.so.0 /usr/lib/aarch64-linux-
 
 WORKDIR /usr/local/zed
 
-#Lagt til av Kjetil 
 RUN python3 -m pip install PyOpenGL && \
     git clone https://github.com/alaabakk/E2504_bachelor
     
