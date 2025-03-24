@@ -19,26 +19,29 @@ pwm2.start(7.5)
 
 try:
     while True:
-        # Move both servos
+        # Your servo movement logic
         print("Left")
-        pwm1.ChangeDutyCycle(5)  # ~0°
         pwm2.ChangeDutyCycle(5)
+        pwm1.ChangeDutyCycle(5)
         time.sleep(1)
 
         print("Right")
-        pwm1.ChangeDutyCycle(10)  # ~180°
         pwm2.ChangeDutyCycle(10)
+        pwm1.ChangeDutyCycle(10)
         time.sleep(1)
 
         print("Center")
-        pwm1.ChangeDutyCycle(7.5)  # ~90°
         pwm2.ChangeDutyCycle(7.5)
+        pwm1.ChangeDutyCycle(7.5)
         time.sleep(1)
 
 except KeyboardInterrupt:
-    pass
+    print("Interrupted by user")
 
-# Cleanup
-pwm1.stop()
-pwm2.stop()
-GPIO.cleanup()
+finally:
+    pwm1.stop()
+    pwm2.stop()
+    try:
+        GPIO.cleanup()
+    except Exception as e:
+        print("GPIO cleanup warning:", e)
