@@ -15,6 +15,7 @@ def init_zed():
     init_params = sl.InitParameters()
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE
     init_params.coordinate_units = sl.UNIT.METER
+    init_params.camera_fps = 10
     init_params.sdk_verbose = 1
     init_params.camera_resolution = sl.RESOLUTION.HD720
 
@@ -40,6 +41,7 @@ def main():
     frame_counter=0
 
     while True:
+
         # Grab a new frame from the ZED camera
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
             # Retrieve the left image from the ZED camera
@@ -51,9 +53,9 @@ def main():
 
             # Increment the frame counter
             frame_counter += 1
-
+            start_time = time.perf_counter()
             # Only process every third frame
-            if frame_counter % 3 == 0:
+            if True:
                 # Perform detection and tracking
                 start_time = time.perf_counter()
                 detections = detector.detect(frame)
@@ -66,6 +68,9 @@ def main():
                     cv2.putText(frame, f"{str(tracking_id)}", 
                                 (int(bounding_box[0]), int(bounding_box[1] - 10)), 
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                
+
+                
 
             # Calculate and display FPS
             end_time = time.perf_counter()
