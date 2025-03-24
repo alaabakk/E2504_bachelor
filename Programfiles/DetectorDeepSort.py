@@ -4,11 +4,11 @@ from ultralytics import YOLO
 class YoloDetector:
   def __init__(self, model_path, confidence):
     self.model = YOLO(model_path)
-    self.classList = ["person", "laptop"]
+    self.classList = ["person"]
     self.confidence = confidence
 
   def detect(self, image):
-    results = self.model.predict(image, conf=self.confidence)
+    results = self.model.predict(image, conf=self.confidence, iou=0.4)
     result = results[0]
     detections = self.make_detections(result)
     return detections

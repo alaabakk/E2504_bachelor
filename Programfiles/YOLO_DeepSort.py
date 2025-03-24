@@ -5,7 +5,7 @@ from TrackerDeepSort import Tracker
 import pyzed.sl as sl
 import numpy as np
 
-MODEL_PATH = "Models/yolov5nu.pt"
+MODEL_PATH = "Models/yolov8s.pt"
 
 def init_zed():
     # Create a Camera object
@@ -32,7 +32,7 @@ def main():
     zed = init_zed()
 
     # Initialize YOLO detector and tracker
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.2)
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.75)
     tracker = Tracker()
 
     # Create a ZED Mat object to store images
@@ -67,7 +67,7 @@ def main():
                                   (int(bounding_box[2]), int(bounding_box[3])), (0, 0, 255), 2)
                     cv2.putText(frame, f"{str(tracking_id)}", 
                                 (int(bounding_box[0]), int(bounding_box[1] - 10)), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
 
                 
