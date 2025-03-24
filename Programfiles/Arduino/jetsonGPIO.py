@@ -1,0 +1,44 @@
+import Jetson.GPIO as GPIO
+import time
+
+# Use physical pin numbers
+servo_pin1 = 32  # PWM7
+servo_pin2 = 33  # PWM5
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(servo_pin1, GPIO.OUT)
+GPIO.setup(servo_pin2, GPIO.OUT)
+
+# Set up 50Hz PWM (standard for servo control)
+pwm1 = GPIO.PWM(servo_pin1, 50)
+pwm2 = GPIO.PWM(servo_pin2, 50)
+
+# Start PWM with center (neutral) pulse (7.5% duty cycle)
+pwm1.start(7.5)
+pwm2.start(7.5)
+
+try:
+    while True:
+        # Move both servos
+        print("Left")
+        pwm1.ChangeDutyCycle(5)  # ~0°
+        pwm2.ChangeDutyCycle(5)
+        time.sleep(1)
+
+        print("Right")
+        pwm1.ChangeDutyCycle(10)  # ~180°
+        pwm2.ChangeDutyCycle(10)
+        time.sleep(1)
+
+        print("Center")
+        pwm1.ChangeDutyCycle(7.5)  # ~90°
+        pwm2.ChangeDutyCycle(7.5)
+        time.sleep(1)
+
+except KeyboardInterrupt:
+    pass
+
+# Cleanup
+pwm1.stop()
+pwm2.stop()
+GPIO.cleanup()
