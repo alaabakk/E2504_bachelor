@@ -37,6 +37,8 @@ def main():
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
+    frame_counter=0
+
     while True:
         # Grab a new frame from the ZED camera
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
@@ -47,18 +49,23 @@ def main():
             # Convert RGBA to RGB
             frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
 
-            # Perform detection and tracking
-            start_time = time.perf_counter()
-            detections = detector.detect(frame)
-            tracking_ids, boxes = tracker.track(detections, frame)
+            # Increment the frame counter
+            frame_counter += 1
 
-            # Draw bounding boxes and tracking IDs
-            for tracking_id, bounding_box in zip(tracking_ids, boxes):
-                cv2.rectangle(frame, (int(bounding_box[0]), int(bounding_box[1])), 
-                              (int(bounding_box[2]), int(bounding_box[3])), (0, 0, 255), 2)
-                cv2.putText(frame, f"{str(tracking_id)}", 
-                            (int(bounding_box[0]), int(bounding_box[1] - 10)), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # Only process every third frame
+            if frame_counter % 3 == 0:
+                # Perform detection and tracking
+                start_time = time.perf_counter()
+                detections = detector.detect(frame)
+                tracking_ids, boxes = tracker.track(detections, frame)
+
+                # Draw bounding boxes and tracking IDs
+                for tracking_id, bounding_box in zip(tracking_ids, boxes):
+                    cv2.rectangle(frame, (int(bounding_box[0]), int(bounding_box[1])), 
+                                  (int(bounding_box[2]), int(bounding_box[3])), (0, 0, 255), 2)
+                    cv2.putText(frame, f"{str(tracking_id)}", 
+                                (int(bounding_box[0]), int(bounding_box[1] - 10)), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             # Calculate and display FPS
             end_time = time.perf_counter()
