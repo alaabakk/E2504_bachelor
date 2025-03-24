@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import pyzed.sl as sl
 import numpy as np
 import cv2
-
+import os
 
 def init_zed():
     # Create a Camera object
@@ -29,7 +29,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "Models/yolov8s.pt")
+    model_path = os.path.join(script_dir, "Models/yolov8s.engine")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
