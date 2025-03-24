@@ -5,7 +5,7 @@ from TrackerDeepSort import Tracker
 import pyzed.sl as sl
 import numpy as np
 
-MODEL_PATH = "Models/yolov5nu.pt"
+MODEL_PATH = "Models/yolov8s.pt"
 
 def init_zed():
     # Create a Camera object
