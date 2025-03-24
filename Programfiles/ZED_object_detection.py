@@ -125,6 +125,7 @@ def calculateDistance(middle, depth_map, point_cloud, img):
 
 def process_objects(objects, img_cv, depth_map, point_cloud, img):
     global active_objects
+    active_objects = []
     global selected_object
 
 
