@@ -2,7 +2,7 @@ import Jetson.GPIO as GPIO
 import time
 
 # Use physical pin numbers
-servo_pin1 = 32  # PWM7
+servo_pin1 = 15  # PWM7
 servo_pin2 = 33  # PWM5
 
 GPIO.setmode(GPIO.BOARD)
