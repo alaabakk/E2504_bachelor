@@ -37,7 +37,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "Models/yolov5su.pt")
+    model_path = os.path.join(script_dir, "Models/yolov8.engine")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
