@@ -32,8 +32,8 @@ def main():
     zed = init_zed()
 
     # Initialize YOLO detector and tracker
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.2)
-    tracker = Tracker()
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.6)
+    tracker = Tracker(max_age=20, min_hits=2)
 
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
