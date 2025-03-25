@@ -4,12 +4,14 @@ import numpy as np
 import cv2
 import os
 import threading
-import time
 
 ## Global variables
 active_objects = []
 last_active_objects = []
 selected_object = None
+
+fixed_camera = False
+
 
 
 
@@ -32,13 +34,12 @@ def init_zed():
 
     return zed
 
-
 def init_yolo():
     # Initialize the YOLO model
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "Models/yolov8s.engine")
+    model_path = os.path.join(script_dir, "yolov8s.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -54,47 +55,6 @@ class KeyboardThread(threading.Thread):
         while True:
             self.input_cbk(input()) #waits to get input + Return
 
-class ServoPWM:
-    def __init__(self, pwmchip, pwmid):
-        self.base = f"/sys/class/pwm/pwmchip{pwmchip}"
-        self.channel = f"{self.base}/pwm{pwmid}"
-        self._export(pwmid)
-        self.set_period(20000000)  # 20 ms for 50 Hz
-
-    def _export(self, pwmid):
-        if not os.path.exists(self.channel):
-            with open(f"{self.base}/export", 'w') as f:
-                f.write(str(pwmid))
-            time.sleep(0.1)
-
-    def set_period(self, period_ns):
-        with open(f"{self.channel}/period", 'w') as f:
-            f.write(str(period_ns))
-
-    def set_duty(self, duty_ns):
-        with open(f"{self.channel}/duty_cycle", 'w') as f:
-            f.write(str(duty_ns))
-
-    def enable(self):
-        with open(f"{self.channel}/enable", 'w') as f:
-            f.write("1")
-
-    def disable(self):
-        with open(f"{self.channel}/enable", 'w') as f:
-            f.write("0")
-
-    def set_angle(self, angle):
-        # Clamp angle
-        angle = max(0, min(180, angle))
-        
-        # Tune these if needed
-        min_duty = 500000     # 0.5 ms
-        max_duty = 2500000    # 2.5 ms
-            
-        # Linear interpolation
-        duty = min_duty + (angle / 180.0) * (max_duty - min_duty)
-        self.set_duty(int(duty))
-
 def my_callback(inp):
     #evaluate the keyboard input
     print('You selected object:', inp)
@@ -102,8 +62,8 @@ def my_callback(inp):
     selected_object = inp
 
 def process_yolo_results(results, img_cv):
-
     global active_objects
+    active_objects = []
     global selected_object
 
     # Define the classes to keep
@@ -111,11 +71,8 @@ def process_yolo_results(results, img_cv):
         0: 'person',
         1: 'car',
         2: 'motorcycle',
-        4: 'airplane',
         4: 'bus',
-        5: 'train',
         6: 'truck',
-        7: 'boat',
     }
 
     # Process YOLO results and draw bounding boxes on the image
@@ -137,8 +94,12 @@ def process_yolo_results(results, img_cv):
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
+                    # Control the servo
+                    servo_control(x1, y1, x2, y2)
+
+
                 else:
-                                        # Draw bounding box
+                    # Draw bounding box
                     cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     # Add label and confidence
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
@@ -162,6 +123,26 @@ def print_active_objects(active_objects):
     last_active_objects = active_objects
 
 
+
+def servo_control(x1, y1, x2, y2):
+    global last_angle_x
+    global last_angle_y
+    # Calculate the center of the bounding box
+    x_center = ((x2 - x1) / 2) + x1
+    y_center = ((y2 - y1) / 2) + y1
+    # Calculate the angle from center(90) to the object
+    delta_x = (x_center - 640) / 640 * 55
+    delta_y = (y_center - 360) / 360 * 55
+
+    if fixed_camera == True:     
+        pass
+
+    elif fixed_camera == False:
+        # Calculate the actual servo position
+        actual_angle_x = 90 + delta_x
+        actual_angle_y = 90 + delta_y
+
+
 def main_loop(zed, model):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
@@ -180,7 +161,7 @@ def main_loop(zed, model):
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
             # Predict using YOLO
-            results = model.track(img_cv, stream=True, augment=True, verbose=False, device=0)
+            results = model.track(img_cv, stream=True, augment=True, verbose=False)
 
             # Process results and draw on the frame
             active_objects = process_yolo_results(results, img_cv)
