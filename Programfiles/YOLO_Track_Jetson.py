@@ -223,6 +223,8 @@ def main_loop(zed, model, servo1, servo2):
 
     zed.close()
     cv2.destroyAllWindows()
+    servo1.disable()
+    servo2.disable()
 
 
 def main():
