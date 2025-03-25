@@ -43,7 +43,7 @@ class ServoPWM:
         self.set_duty(int(duty))
 
 
-if __name == "__main__":
+if __name__ == "__main__":
     # ============================
     # Setup both servos and run test
     # ============================
