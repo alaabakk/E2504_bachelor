@@ -30,17 +30,17 @@ class ServoPWM:
         with open(f"{self.channel}/enable", 'w') as f:
             f.write("0")
 
-	def set_angle(self, angle):
-	    # Clamp angle
-	    angle = max(0, min(180, angle))
-	    
-	    # Tune these if needed
-	    min_duty = 500000     # 0.5 ms
-	    max_duty = 2500000    # 2.5 ms
+    def set_angle(self, angle):
+        # Clamp angle
+        angle = max(0, min(180, angle))
+        
+        # Tune these if needed
+        min_duty = 500000     # 0.5 ms
+        max_duty = 2500000    # 2.5 ms
             
-	    # Linear interpolation
-	    duty = min_duty + (angle / 180.0) * (max_duty - min_duty)
-	    self.set_duty(int(duty))
+        # Linear interpolation
+        duty = min_duty + (angle / 180.0) * (max_duty - min_duty)
+        self.set_duty(int(duty))
 
 
 # ============================
