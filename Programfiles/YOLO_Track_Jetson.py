@@ -12,6 +12,7 @@ last_active_objects = []
 selected_object = None
 
 fixed_camera = False
+
 class ServoPWM:
     def __init__(self, pwmchip, pwmid):
         self.base = f"/sys/class/pwm/pwmchip{pwmchip}"
@@ -52,8 +53,6 @@ class ServoPWM:
         # Linear interpolation
         duty = min_duty + (angle / 180.0) * (max_duty - min_duty)
         self.set_duty(int(duty))
-
-
 
 
 def init_zed():
