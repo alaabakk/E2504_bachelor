@@ -43,41 +43,42 @@ class ServoPWM:
         self.set_duty(int(duty))
 
 
-# ============================
-# Setup both servos
-# ============================
+if __name == "__main__":
+    # ============================
+    # Setup both servos and run test
+    # ============================
 
-# Pin 32 = pwmchip3/pwm0
-servo1 = ServoPWM(3, 0)
+    # Pin 32 = pwmchip3/pwm0
+    servo1 = ServoPWM(3, 0)
 
-# Pin 33 = pwmchip0/pwm0
-servo2 = ServoPWM(0, 0)
+    # Pin 33 = pwmchip0/pwm0
+    servo2 = ServoPWM(0, 0)
 
-servo1.enable()
-servo2.enable()
+    servo1.enable()
+    servo2.enable()
 
-print("Moving both servos...")
+    print("Moving both servos...")
 
-try:
-    while True:
-        print("Position: 0°")
-        servo1.set_angle(0)
-        servo2.set_angle(0)
-        time.sleep(1)
+    try:
+        while True:
+            print("Position: 0°")
+            servo1.set_angle(0)
+            servo2.set_angle(0)
+            time.sleep(1)
 
-        print("Position: 90°")
-        servo1.set_angle(90)
-        servo2.set_angle(90)
-        time.sleep(1)
+            print("Position: 90°")
+            servo1.set_angle(90)
+            servo2.set_angle(90)
+            time.sleep(1)
 
-        print("Position: 180°")
-        servo1.set_angle(180)
-        servo2.set_angle(180)
-        time.sleep(1)
+            print("Position: 180°")
+            servo1.set_angle(180)
+            servo2.set_angle(180)
+            time.sleep(1)
 
-except KeyboardInterrupt:
-    print("Stopping servos...")
+    except KeyboardInterrupt:
+        print("Stopping servos...")
 
-finally:
-    servo1.disable()
-    servo2.disable()
+    finally:
+        servo1.disable()
+        servo2.disable()
