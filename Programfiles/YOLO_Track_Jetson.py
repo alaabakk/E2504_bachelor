@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import os
 import threading
+import time
 
 ## Global variables
 active_objects = []
@@ -11,6 +12,46 @@ last_active_objects = []
 selected_object = None
 
 fixed_camera = False
+class ServoPWM:
+    def __init__(self, pwmchip, pwmid):
+        self.base = f"/sys/class/pwm/pwmchip{pwmchip}"
+        self.channel = f"{self.base}/pwm{pwmid}"
+        self._export(pwmid)
+        self.set_period(20000000)  # 20 ms for 50 Hz
+
+    def _export(self, pwmid):
+        if not os.path.exists(self.channel):
+            with open(f"{self.base}/export", 'w') as f:
+                f.write(str(pwmid))
+            time.sleep(0.1)
+
+    def set_period(self, period_ns):
+        with open(f"{self.channel}/period", 'w') as f:
+            f.write(str(period_ns))
+
+    def set_duty(self, duty_ns):
+        with open(f"{self.channel}/duty_cycle", 'w') as f:
+            f.write(str(duty_ns))
+
+    def enable(self):
+        with open(f"{self.channel}/enable", 'w') as f:
+            f.write("1")
+
+    def disable(self):
+        with open(f"{self.channel}/enable", 'w') as f:
+            f.write("0")
+
+    def set_angle(self, angle):
+        # Clamp angle
+        angle = max(0, min(180, angle))
+        
+        # Tune these if needed
+        min_duty = 500000     # 0.5 ms
+        max_duty = 2500000    # 2.5 ms
+            
+        # Linear interpolation
+        duty = min_duty + (angle / 180.0) * (max_duty - min_duty)
+        self.set_duty(int(duty))
 
 
 
@@ -61,7 +102,7 @@ def my_callback(inp):
     global selected_object
     selected_object = inp
 
-def process_yolo_results(results, img_cv):
+def process_yolo_results(results, img_cv, servo1, servo2):
     global active_objects
     active_objects = []
     global selected_object
@@ -95,7 +136,7 @@ def process_yolo_results(results, img_cv):
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
                     # Control the servo
-                    servo_control(x1, y1, x2, y2)
+                    servo_control(x1, y1, x2, y2, servo1, servo2)
 
 
                 else:
@@ -124,7 +165,7 @@ def print_active_objects(active_objects):
 
 
 
-def servo_control(x1, y1, x2, y2):
+def servo_control(x1, y1, x2, y2, servo1, servo2):
     global last_angle_x
     global last_angle_y
     # Calculate the center of the bounding box
@@ -142,8 +183,11 @@ def servo_control(x1, y1, x2, y2):
         actual_angle_x = 90 + delta_x
         actual_angle_y = 90 + delta_y
 
+        servo1.set_angle(actual_angle_x)
+        servo2.set_angle(actual_angle_y)
 
-def main_loop(zed, model):
+
+def main_loop(zed, model, servo1, servo2):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
@@ -164,7 +208,7 @@ def main_loop(zed, model):
             results = model.track(img_cv, stream=True, augment=True, verbose=False)
 
             # Process results and draw on the frame
-            active_objects = process_yolo_results(results, img_cv)
+            active_objects = process_yolo_results(results, img_cv, servo1, servo2)
 
             print_active_objects(active_objects)
 
@@ -191,8 +235,16 @@ def main():
     # Start the keyboard input thread
     kthread = KeyboardThread(my_callback)
 
+    # Pin 32 = pwmchip3/pwm0
+    servo1 = ServoPWM(3, 0)
+    # Pin 33 = pwmchip0/pwm0
+    servo2 = ServoPWM(0, 0)
+
+    servo1.enable()
+    servo2.enable()
+
     # Start the main loop
-    main_loop(zed, model)
+    main_loop(zed, model, servo1, servo2)
 
 
 if __name__ == "__main__":
