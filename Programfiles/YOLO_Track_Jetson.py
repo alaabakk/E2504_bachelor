@@ -98,7 +98,7 @@ class KeyboardThread(threading.Thread):
 
 def my_callback(inp):
     #evaluate the keyboard input
-    print('You selected object:', inp)
+    print('Enter the ID of the object you want to track, enter q to stop tracking:', inp)
     global selected_object
     selected_object = inp
 
@@ -210,7 +210,7 @@ def main_loop(zed, model, servo1, servo2):
             # Process results and draw on the frame
             active_objects = process_yolo_results(results, img_cv, servo1, servo2)
 
-            print_active_objects(active_objects)
+            #print_active_objects(active_objects)
 
             # Resize the frame to fixed dimensions
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
