@@ -1,3 +1,6 @@
+import os
+import time
+
 class ServoPWM:
     def __init__(self, pwmchip, pwmid):
         self.base = f"/sys/class/pwm/pwmchip{pwmchip}"
