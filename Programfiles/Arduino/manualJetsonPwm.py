@@ -1,5 +1,5 @@
 import os
-import time
+import time 
 
 class ServoPWM:
     def __init__(self, pwmchip, pwmid):
