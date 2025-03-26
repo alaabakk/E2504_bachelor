@@ -215,8 +215,8 @@ def main_loop(zed, model, servo1, servo2):
     
     zed.close()
     cv2.destroyAllWindows()
-    servo1.stop
-    servo2.stop
+    servo1.stop()
+    servo2.stop()
     GPIO.cleanup()
 
 
