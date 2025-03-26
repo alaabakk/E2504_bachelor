@@ -237,6 +237,10 @@ def main_loop(zed, model, servo1, servo2):
                 startup_message()
                 first_iteration = False
 
+    # Sets servo to center position and stops the program
+    servo1.ChangeDutyCycle(7.5)
+    servo2.ChangeDutyCycle(7.5)
+    
     zed.close()
     cv2.destroyAllWindows()
     servo1.stop
