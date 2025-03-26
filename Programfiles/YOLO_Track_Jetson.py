@@ -58,10 +58,14 @@ class KeyboardThread(threading.Thread):
             self.input_cbk(input()) #waits to get input + Return
 
 def my_callback(inp):
-    #evaluate the keyboard input
-    print('Enter the ID of the object you want to track, enter q to stop tracking:', inp)
     global selected_object
-    selected_object = inp
+    #evaluate the keyboard input
+    if inp == 'q':
+        print('Stop tracking object')
+        selected_object = None
+    else:
+        print('Your now tracking object:', inp)
+        selected_object = inp
 
 def process_yolo_results(results, img_cv, servo1, servo2):
     global active_objects
@@ -237,6 +241,10 @@ def main():
 
     servo1.start(7.5)
     servo2.start(7.5)
+
+    # Start up information
+    print("Program started. Press 'q' in the video window to stop the program.")
+    print("Enter the ID of the object you want to track, enter q to stop tracking.")
 
     # Start the main loop
     main_loop(zed, model, servo1, servo2)
