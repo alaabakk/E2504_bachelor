@@ -23,12 +23,12 @@ try:
     while True:
         print("Moving to 0°")
         for pwm in pwms.values():
-            pwm.ChangeDutyCycle(5.0)
+            pwm.ChangeDutyCycle(2.5)
         time.sleep(1)
 
         print("Moving to 180°")
         for pwm in pwms.values():
-            pwm.ChangeDutyCycle(10.0)
+            pwm.ChangeDutyCycle(12.5)
         time.sleep(1)
 
         print("Centering at 90°")
