@@ -164,6 +164,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
     angle_y = 35 + (y_center / 720) * (145 - 35)
 
     if selected_object != None:
+        print("none")
         if fixed_camera == True:     
             pass
 
@@ -182,6 +183,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
             
     else:
         # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
+        print("else")
         servo1.ChangeDutyCycle(7.5)
         servo2.ChangeDutyCycle(7.5)
 
