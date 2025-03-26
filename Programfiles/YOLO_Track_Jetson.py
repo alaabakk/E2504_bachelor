@@ -10,7 +10,7 @@ import time
 ## Global variables
 active_objects = []
 last_active_objects = []
-selected_object = None
+selected_object = 'q'
 
 fixed_camera = False
 GPIO.setmode(GPIO.BOARD)
@@ -165,7 +165,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
     angle_y = 35 + (y_center / 720) * (145 - 35)
 
     print(selected_object)
-    if selected_object != None or selected_object != 'q':
+    if selected_object != 'q':
         print("if")
         if fixed_camera == True:     
             pass
