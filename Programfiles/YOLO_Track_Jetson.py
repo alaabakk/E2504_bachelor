@@ -143,13 +143,12 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         # Calculate the actual servo position
         actual_angle_x = 90 + delta_x
         actual_angle_y = 90 + delta_y
-
-        actual_angle_x = max(0, min(180, actual_angle_x))
-        actual_angle_y = max(0, min(180, actual_angle_y))
+        # 180 - to invert the direction of servos
+        actual_angle_x = 180 - max(0, min(180, actual_angle_x))
+        actual_angle_y = 180 - max(0, min(180, actual_angle_y))
 
         min_duty = 2.5
         max_duty = 12.5
-
         duty_x = min_duty + (actual_angle_x / 180.0) * (max_duty - min_duty)
         duty_y = min_duty + (actual_angle_y / 180.0) * (max_duty - min_duty)
 
