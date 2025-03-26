@@ -103,16 +103,13 @@ def process_yolo_results(results, img_cv, servo1, servo2):
                     # Control the servo
                     servo_control(x1, y1, x2, y2, servo1, servo2)
 
-
                 else:
                     # Draw bounding box
                     cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     # Add label and confidence
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                    # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
-                    #servo1.ChangeDutyCycle(7.5)
-                    #servo2.ChangeDutyCycle(7.5)
+
 
     return active_objects
           
@@ -158,6 +155,7 @@ def servo_control_Gammel(x1, y1, x2, y2, servo1, servo2):
         servo2.ChangeDutyCycle(duty_y)
 
 def servo_control(x1, y1, x2, y2, servo1, servo2):
+    global selected_object
     # Calculate the center of the bounding box
     x_center = ((x2 - x1) / 2) + x1
     y_center = ((y2 - y1) / 2) + y1
@@ -165,21 +163,27 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
     angle_x = 35 + (x_center / 1280) * (145 - 35)
     angle_y = 35 + (y_center / 720) * (145 - 35)
 
-    if fixed_camera == True:     
-        pass
+    if selected_object != None:
+        if fixed_camera == True:     
+            pass
 
-    elif fixed_camera == False:
-        # 180 - to invert the direction of servos
-        angle_x = 180 - max(0, min(180, angle_x))
-        angle_y = 180 - max(0, min(180, angle_y))
+        elif fixed_camera == False:
+            # 180 - to invert the direction of servos
+            angle_x = 180 - max(0, min(180, angle_x))
+            angle_y = 180 - max(0, min(180, angle_y))
 
-        min_duty = 2.5
-        max_duty = 12.5
-        duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
-        duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
+            min_duty = 2.5
+            max_duty = 12.5
+            duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
+            duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
 
-        servo1.ChangeDutyCycle(duty_x)
-        servo2.ChangeDutyCycle(duty_y)
+            servo1.ChangeDutyCycle(duty_x)
+            servo2.ChangeDutyCycle(duty_y)
+            
+    else:
+        # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
+        servo1.ChangeDutyCycle(7.5)
+        servo2.ChangeDutyCycle(7.5)
 
 def startup_message():
     # Start up information
