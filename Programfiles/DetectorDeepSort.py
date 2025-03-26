@@ -8,7 +8,7 @@ class YoloDetector:
     self.confidence = confidence
 
   def detect(self, image):
-    results = self.model.predict(image, conf=self.confidence, iou=0.4)
+    results = self.model.predict(image, conf=self.confidence, iou=0.4, verbose=False)
     result = results[0]
     detections = self.make_detections(result)
     return detections
