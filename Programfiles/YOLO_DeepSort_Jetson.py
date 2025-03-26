@@ -78,7 +78,7 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2
     }
 
     for tracking_id, bounding_box,  detection in zip(tracking_ids, boxes, detections):
-        x1, y1, x2, y2 = bounding_box
+        x1, y1, x2, y2 = int(bounding_box)
 
         type = names[detection[1]]  # Get class label from the dictionary
         active_objects.append([tracking_id, type])
