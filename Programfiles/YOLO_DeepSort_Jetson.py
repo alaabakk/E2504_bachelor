@@ -84,6 +84,9 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2
         active_objects.append([tracking_id, type])
         confidence = round(detection[2], 2)
 
+        print(f"ID: {tracking_id}, Type: {type}, Confidence: {confidence}")
+        print(f"Bounding Box: {x1, y1, x2, y2}")
+
         if selected_object == str(tracking_id):
             # Draw bounding box
             cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)

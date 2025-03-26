@@ -63,7 +63,7 @@ def main():
 
                 # Draw bounding boxes and tracking IDs
                 for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
-                    print(detection[2])
+                    print(detection[0])
 
                     
 
