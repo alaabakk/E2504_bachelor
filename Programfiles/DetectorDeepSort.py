@@ -17,13 +17,12 @@ class YoloDetector:
     boxes = result.boxes
     detections = []
     for box in boxes:
-      x1, y1, x2, y2 = box.xyxy[0]
-      x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+      x1, y1, x2, y2 = map(int, box.xyxy[0])
       w, h = x2 - x1, y2 - y1
       class_number = int(box.cls[0])
 
       if result.names[class_number] not in self.classList:
         continue
       conf = box.conf.item()
-      detections.append((([x1, y1, x2, y2]), class_number, conf))
+      detections.append((([x1, y1, w, h]), class_number, conf))
     return detections
