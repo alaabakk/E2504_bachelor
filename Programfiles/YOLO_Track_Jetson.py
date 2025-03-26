@@ -106,10 +106,12 @@ def process_yolo_results(results, img_cv, servo1, servo2):
                     # Add label and confidence
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
+                    servo1.ChangeDutyCycle(7.5)
+                    servo2.ChangeDutyCycle(7.5)
 
     return active_objects
-
-                
+          
 def print_active_objects(active_objects):
     global last_active_objects
     if active_objects != last_active_objects:
@@ -123,8 +125,6 @@ def print_active_objects(active_objects):
             print("\nNo active objects detected.")
 
     last_active_objects = active_objects
-
-
 
 def servo_control_Gammel(x1, y1, x2, y2, servo1, servo2):
     # Calculate the center of the bounding box
