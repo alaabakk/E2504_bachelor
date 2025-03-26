@@ -164,9 +164,13 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
     angle_x = 35 + (x_center / 1280) * (145 - 35)
     angle_y = 35 + (y_center / 720) * (145 - 35)
 
-    print(selected_object)
-    if selected_object != 'q':
-        print("if")
+    
+    if selected_object == 'q':
+        # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
+        servo1.ChangeDutyCycle(7.5)
+        servo2.ChangeDutyCycle(7.5)
+
+    else:
         if fixed_camera == True:     
             pass
 
@@ -180,15 +184,10 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
             duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
             duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
 
+            print(f"Servo 1: {duty_x:.2f} Servo 2: {duty_y:.2f}")
             servo1.ChangeDutyCycle(duty_x)
             servo2.ChangeDutyCycle(duty_y)
-            
-    elif selected_object == 'q':
-        # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
-        print("else")
-        servo1.ChangeDutyCycle(7.5)
-        servo2.ChangeDutyCycle(7.5)
-    
+
 
 def startup_message():
     # Start up information
