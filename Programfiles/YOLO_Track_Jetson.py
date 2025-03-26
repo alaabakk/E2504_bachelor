@@ -112,6 +112,7 @@ def process_yolo_results(results, img_cv, servo1, servo2):
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
+                    # Check if no object is selected
                     if selected_object == 'q':
                         # Control the servo
                         servo_control(x1, y1, x2, y2, servo1, servo2)
@@ -176,22 +177,17 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         servo2.ChangeDutyCycle(7.5)
 
     else:
-        if fixed_camera == True:     
-            pass
+        # 180 - to invert the direction of servos
+        angle_x = 180 - max(0, min(180, angle_x))
+        angle_y = 180 - max(0, min(180, angle_y))
 
-        elif fixed_camera == False:
-            # 180 - to invert the direction of servos
-            angle_x = 180 - max(0, min(180, angle_x))
-            angle_y = 180 - max(0, min(180, angle_y))
+        min_duty = 2.5
+        max_duty = 12.5
+        duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
+        duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
 
-            min_duty = 2.5
-            max_duty = 12.5
-            duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
-            duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
-
-            print(f"Servo 1: {duty_x:.2f} Servo 2: {duty_y:.2f}")
-            servo1.ChangeDutyCycle(duty_x)
-            servo2.ChangeDutyCycle(duty_y)
+        servo1.ChangeDutyCycle(duty_x)
+        servo2.ChangeDutyCycle(duty_y)
 
 
 def startup_message():
