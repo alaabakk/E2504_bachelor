@@ -5,7 +5,6 @@ import cv2
 import os
 import threading
 import Jetson.GPIO as GPIO
-import time
 
 ## Global variables
 active_objects = []
