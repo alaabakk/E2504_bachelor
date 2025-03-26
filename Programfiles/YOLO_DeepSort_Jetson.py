@@ -103,8 +103,6 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2
 
     return active_objects
 
-
-
 def print_active_objects(active_objects):
     global last_active_objects
     if active_objects != last_active_objects:
@@ -122,10 +120,9 @@ def print_active_objects(active_objects):
 def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
     # Draw bounding box
     cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
-    # Add label and confidence
-    label_text = f"{tracking_id} {type} ({confidence:.2f})"  # Updated to show object name
+    # Add label
+    label_text = f"{tracking_id} {type} ({confidence:.2f})"
     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
 
 def servo_control(x1, y1, x2, y2, servo1, servo2):
     global selected_object
@@ -155,7 +152,6 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         servo1.ChangeDutyCycle(duty_x)
         servo2.ChangeDutyCycle(duty_y)
     
-
 def startup_message():
     # Start up information
     print("\n \nYOLO Object Detection with ZED")
@@ -188,7 +184,6 @@ def main_loop(zed, detector, tracker, servo1, servo2):
 
             # Process results and draw on the frame
             process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2)
-
 
             # Resize the frame to fixed dimensions
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
