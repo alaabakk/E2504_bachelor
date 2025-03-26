@@ -62,7 +62,11 @@ def main():
                 tracking_ids, boxes = tracker.track(detections, frame)
 
                 # Draw bounding boxes and tracking IDs
-                for tracking_id, bounding_box in zip(tracking_ids, boxes):
+                for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
+                    print(detection[2])
+
+                    
+
                     cv2.rectangle(frame, (int(bounding_box[0]), int(bounding_box[1])), 
                                   (int(bounding_box[2]), int(bounding_box[3])), (0, 0, 255), 2)
                     cv2.putText(frame, f"{str(tracking_id)}", 

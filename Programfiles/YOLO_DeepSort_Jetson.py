@@ -5,7 +5,9 @@ import cv2
 import os
 import threading
 import Jetson.GPIO as GPIO
-import time
+
+from DetectorDeepSort import YoloDetector
+from TrackerDeepSort import Tracker
 
 ## Global variables
 active_objects = []
@@ -16,6 +18,10 @@ fixed_camera = False
 GPIO.setmode(GPIO.BOARD)
 servoPin1 = 32
 servoPin2 = 33
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Construct the path to the model file
+MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.engine")
 
 def init_zed():
     # Create a Camera object
@@ -35,16 +41,6 @@ def init_zed():
         exit()
 
     return zed
-
-def init_yolo():
-    # Initialize the YOLO model
-    print("Initializing YOLO model...")
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Construct the path to the model file
-    model_path = os.path.join(script_dir, "Models/yolov8s.engine")
-    model = YOLO(model_path, task="detect")
-    print("YOLO model initialized")
-    return model
 
 class KeyboardThread(threading.Thread):
 
@@ -67,7 +63,7 @@ def my_callback(inp):
         print('Your now tracking object:', inp)
         selected_object = inp
 
-def process_yolo_results(results, img_cv, servo1, servo2):
+def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2):
     global active_objects
     active_objects = []
     global selected_object
@@ -81,45 +77,39 @@ def process_yolo_results(results, img_cv, servo1, servo2):
         6: 'truck',
     }
 
-    # Process YOLO results and draw bounding boxes on the image
-    for r in results:
-        for box in r.boxes:
-            label_id = int(box.cls[0])  # Class ID
-            if label_id in names:  # Filter by desired classes
-                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
-                confidence = box.conf[0]  # Confidence score
-                type = names[label_id]  # Get class label from the dictionary
-                ID = int(box.id[0])  # Get the unique ID of the object
+    for tracking_id, bounding_box,  detection in zip(tracking_ids, boxes, detections):
+        x1, y1, x2, y2 = bounding_box
 
-                active_objects.append([ID, type]) # Add object to the list of active objects
+        type = names[detection[1]]  # Get class label from the dictionary
+        active_objects.append([tracking_id, type])
+        confidence = round(detection[2], 2)
 
-                
+        if selected_object == str(tracking_id):
+            # Draw bounding box
+            cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            # Add label and confidence
+            label_text = f"{tracking_id} {type} ({confidence:.2f})"  # Updated to show object name
+            cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            # Control the servo
+            servo_control(x1, y1, x2, y2, servo1, servo2)
 
-                if selected_object == str(ID):
-                    # Draw bounding box
-                    cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    # Add label and confidence
-                    label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
-                    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-                    # Control the servo
-                    servo_control(x1, y1, x2, y2, servo1, servo2)
+        else:
+            # Draw bounding box
+            cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            # Add label and confidence
+            label_text = f"{tracking_id} {type} ({confidence:.2f})"  # Updated to show object name
+            cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-
-                else:
-                    # Draw bounding box
-                    cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    # Add label and confidence
-                    label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
-                    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-                    # Check if no object is selected
-                    if selected_object == 'q':
-                        # Control the servo
-                        servo_control(x1, y1, x2, y2, servo1, servo2)
+            # Check if no object is selected
+            if selected_object == 'q':
+                # Control the servo
+                servo_control(x1, y1, x2, y2, servo1, servo2)
 
 
     return active_objects
-          
+
+
+
 def print_active_objects(active_objects):
     global last_active_objects
     if active_objects != last_active_objects:
@@ -170,7 +160,7 @@ def startup_message():
     print("Enter the ID of the object you want to track, enter q to stop tracking.")
 
 
-def main_loop(zed, model, servo1, servo2):
+def main_loop(zed, detector, tracker, servo1, servo2):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
@@ -190,12 +180,12 @@ def main_loop(zed, model, servo1, servo2):
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
             # Predict using YOLO
-            results = model.track(img_cv, stream=True, augment=True, verbose=False)
+            detections = detector.detect(img_cv)
+            tracking_ids, boxes = tracker.track(detections, img_cv)
 
             # Process results and draw on the frame
-            active_objects = process_yolo_results(results, img_cv, servo1, servo2)
+            process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2)
 
-            #print_active_objects(active_objects)
 
             # Resize the frame to fixed dimensions
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
@@ -225,8 +215,9 @@ def main():
     # Initialize ZED camera
     zed = init_zed()
 
-    # Initialize YOLO model
-    model = init_yolo()
+    # Initialize YOLO detector and tracker
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.75)
+    tracker = Tracker()
 
     # Start the keyboard input thread
     kthread = KeyboardThread(my_callback)
@@ -240,7 +231,7 @@ def main():
     servo2.start(7.5)
 
     # Start the main loop
-    main_loop(zed, model, servo1, servo2)
+    main_loop(zed, detector, tracker, servo1, servo2)
 
 
 if __name__ == "__main__":

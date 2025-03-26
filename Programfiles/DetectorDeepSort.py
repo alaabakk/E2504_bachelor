@@ -24,6 +24,6 @@ class YoloDetector:
 
       if result.names[class_number] not in self.classList:
         continue
-      conf = box.conf[0]
-      detections.append((([x1, y1, w, h]), class_number, conf))
+      conf = box.conf.item()
+      detections.append((([x1, y1, x2, y2]), class_number, conf))
     return detections
