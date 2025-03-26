@@ -153,8 +153,9 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         angle_x = 180 - max(0, min(180, angle_x))
         angle_y = 180 - max(0, min(180, angle_y))
 
-        min_duty = 2.5
-        max_duty = 12.5
+        min_duty = 2.5 # 2.5% duty cycle = 0 degrees
+        max_duty = 12.5 # 12.5% duty cycle = 180 degrees
+        #Linear interpolation to calculate duty cycle
         duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
         duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
 
