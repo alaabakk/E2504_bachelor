@@ -61,7 +61,7 @@ def my_callback(inp):
     global selected_object
     #evaluate the keyboard input
     if inp == 'q':
-        print('Stop tracking object')
+        print('Tracking stopped.')
         selected_object = None
     else:
         print('Your now tracking object:', inp)
