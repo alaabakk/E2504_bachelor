@@ -107,8 +107,8 @@ def process_yolo_results(results, img_cv, servo1, servo2):
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                     # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
-                    servo1.ChangeDutyCycle(7.5)
-                    servo2.ChangeDutyCycle(7.5)
+                    #servo1.ChangeDutyCycle(7.5)
+                    #servo2.ChangeDutyCycle(7.5)
 
     return active_objects
           
