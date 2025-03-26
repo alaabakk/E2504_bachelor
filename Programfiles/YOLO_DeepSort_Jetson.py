@@ -81,27 +81,19 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2
         x1, y1, x2, y2 = bounding_box
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
-
         type = names[detection[1]]  # Get class label from the dictionary
         active_objects.append([tracking_id, type])
         confidence = round(detection[2], 2)
 
-
         if selected_object == str(tracking_id):
             # Draw bounding box
-            cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            # Add label and confidence
-            label_text = f"{tracking_id} {type} ({confidence:.2f})"  # Updated to show object name
-            cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
             # Control the servo
             servo_control(x1, y1, x2, y2, servo1, servo2)
 
         else:
             # Draw bounding box
-            cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            # Add label and confidence
-            label_text = f"{tracking_id} {type} ({confidence:.2f})"  # Updated to show object name
-            cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence)
 
             # Check if no object is selected
             if selected_object == 'q':
@@ -126,6 +118,14 @@ def print_active_objects(active_objects):
             print("\nNo active objects detected.")
 
     last_active_objects = active_objects
+
+def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
+    # Draw bounding box
+    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
+    # Add label and confidence
+    label_text = f"{tracking_id} {type} ({confidence:.2f})"  # Updated to show object name
+    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
 
 def servo_control(x1, y1, x2, y2, servo1, servo2):
     global selected_object
@@ -154,7 +154,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
 
         servo1.ChangeDutyCycle(duty_x)
         servo2.ChangeDutyCycle(duty_y)
-
+    
 
 def startup_message():
     # Start up information
