@@ -61,8 +61,8 @@ def my_callback(inp):
     global selected_object
     #evaluate the keyboard input
     if inp == 'q':
-        print('Tracking stopped.')
-        selected_object = None
+        print('Tracking stopped.', inp)
+        selected_object = inp
     else:
         print('Your now tracking object:', inp)
         selected_object = inp
@@ -164,8 +164,8 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
     angle_y = 35 + (y_center / 720) * (145 - 35)
 
     print(selected_object)
-    if selected_object != None:
-        print("None")
+    if selected_object != None or selected_object != 'q':
+        print("if")
         if fixed_camera == True:     
             pass
 
@@ -182,7 +182,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
             servo1.ChangeDutyCycle(duty_x)
             servo2.ChangeDutyCycle(duty_y)
             
-    elif selected_object == None:
+    elif selected_object == 'q':
         # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
         print("else")
         servo1.ChangeDutyCycle(7.5)
