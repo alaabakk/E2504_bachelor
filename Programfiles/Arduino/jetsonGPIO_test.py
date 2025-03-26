@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BOARD)
 # Define PWM pins (must be properly mapped in gpio_pin_data.py)
 servo_pins = {
     32: "PWM7",  # Should map to pwmchip3/pwm0
-    15: "PWM0"   # Should map to pwmchip0/pwm0
+    33: "PWM0"   # Should map to pwmchip0/pwm0
 }
 
 # Set up pins and PWM
