@@ -93,6 +93,9 @@ def process_yolo_results(results, img_cv, servo1, servo2):
 
                 active_objects.append([ID, type]) # Add object to the list of active objects
 
+                # Control the servo
+                servo_control(x1, y1, x2, y2, servo1, servo2)
+
                 if selected_object == str(ID):
                     # Draw bounding box
                     cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)
@@ -100,8 +103,6 @@ def process_yolo_results(results, img_cv, servo1, servo2):
                     label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
                     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                    # Control the servo
-                    servo_control(x1, y1, x2, y2, servo1, servo2)
 
                 else:
                     # Draw bounding box
