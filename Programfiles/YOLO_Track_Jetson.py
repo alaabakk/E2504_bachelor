@@ -181,19 +181,21 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         servo1.ChangeDutyCycle(duty_x)
         servo2.ChangeDutyCycle(duty_y)
 
+def startup_message():
+    # Start up information
+    print("Program started. Press 'q' in the video window to stop the program.")
+    print("Enter the ID of the object you want to track, enter q to stop tracking.")
 
 
 def main_loop(zed, model, servo1, servo2):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
-    # Start up information
-    print("Program started. Press 'q' in the video window to stop the program.")
-    print("Enter the ID of the object you want to track, enter q to stop tracking.")
-
     # Define fixed width and height
     fixed_width = 1280
     fixed_height = 720
+
+    first_iteration = True
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
@@ -220,6 +222,10 @@ def main_loop(zed, model, servo1, servo2):
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
+            if first_iteration:
+                startup_message()
+                first_iteration = False
 
     zed.close()
     cv2.destroyAllWindows()
