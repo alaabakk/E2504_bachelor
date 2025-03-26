@@ -162,6 +162,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         servo1.ChangeDutyCycle(duty_x)
         servo2.ChangeDutyCycle(duty_y)
 
+
 def startup_message():
     # Start up information
     print("\n \nYOLO Object Detection with ZED")
