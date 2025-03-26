@@ -81,12 +81,11 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2
         x1, y1, x2, y2 = bounding_box
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
+
         type = names[detection[1]]  # Get class label from the dictionary
         active_objects.append([tracking_id, type])
         confidence = round(detection[2], 2)
 
-        print(f"ID: {tracking_id}, Type: {type}, Confidence: {confidence}")
-        print(f"Bounding Box: {x1, y1, x2, y2}")
 
         if selected_object == str(tracking_id):
             # Draw bounding box
