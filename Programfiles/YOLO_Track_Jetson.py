@@ -153,8 +153,8 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         duty_x = min_duty + (actual_angle_x / 180.0) * (max_duty - min_duty)
         duty_y = min_duty + (actual_angle_y / 180.0) * (max_duty - min_duty)
 
-        servo1.ChangeDutyCycle(actual_angle_x)
-        servo2.ChangeDutyCycle(actual_angle_y)
+        servo1.ChangeDutyCycle(duty_x)
+        servo2.ChangeDutyCycle(duty_y)
 
 
 def main_loop(zed, model, servo1, servo2):
