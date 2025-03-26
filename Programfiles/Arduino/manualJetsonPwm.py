@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # Pin 32 = pwmchip3/pwm0
     servo1 = ServoPWM(3, 0)
 
-    # Pin 33 = pwmchip0/pwm0
+    # Pin 15 = pwmchip0/pwm0
     servo2 = ServoPWM(0, 0)
 
     servo1.enable()
