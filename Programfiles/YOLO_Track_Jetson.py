@@ -183,6 +183,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
 
 def startup_message():
     # Start up information
+    print("\n \nYOLO Object Detection with ZED")
     print("Program started. Press 'q' in the video window to stop the program.")
     print("Enter the ID of the object you want to track, enter q to stop tracking.")
 
