@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import os
 import threading
+import Jetson.GPIO as GPIO
 import time
 
 ## Global variables
@@ -12,48 +13,9 @@ last_active_objects = []
 selected_object = None
 
 fixed_camera = False
-
-class ServoPWM:
-    def __init__(self, pwmchip, pwmid):
-        self.base = f"/sys/class/pwm/pwmchip{pwmchip}"
-        self.channel = f"{self.base}/pwm{pwmid}"
-        self._export(pwmid)
-        self.set_period(20000000)  # 20 ms for 50 Hz
-
-    def _export(self, pwmid):
-        if not os.path.exists(self.channel):
-            with open(f"{self.base}/export", 'w') as f:
-                f.write(str(pwmid))
-            time.sleep(0.1)
-
-    def set_period(self, period_ns):
-        with open(f"{self.channel}/period", 'w') as f:
-            f.write(str(period_ns))
-
-    def set_duty(self, duty_ns):
-        with open(f"{self.channel}/duty_cycle", 'w') as f:
-            f.write(str(duty_ns))
-
-    def enable(self):
-        with open(f"{self.channel}/enable", 'w') as f:
-            f.write("1")
-
-    def disable(self):
-        with open(f"{self.channel}/enable", 'w') as f:
-            f.write("0")
-
-    def set_angle(self, angle):
-        # Clamp angle
-        angle = max(0, min(180, angle))
-        
-        # Tune these if needed
-        min_duty = 500000     # 0.5 ms
-        max_duty = 2500000    # 2.5 ms
-            
-        # Linear interpolation
-        duty = min_duty + (angle / 180.0) * (max_duty - min_duty)
-        self.set_duty(int(duty))
-
+GPIO.setmode(GPIO.BOARD)
+servoPin1 = 32
+servoPin2 = 33
 
 def init_zed():
     # Create a Camera object
@@ -182,8 +144,17 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
         actual_angle_x = 90 + delta_x
         actual_angle_y = 90 + delta_y
 
-        servo1.set_angle(actual_angle_x)
-        servo2.set_angle(actual_angle_y)
+        actual_angle_x = max(0, min(180, actual_angle_x))
+        actual_angle_y = max(0, min(180, actual_angle_y))
+        
+        min_duty = 2.5
+        max_duty = 12.5
+
+        duty_x = min_duty + (actual_angle_x / 180.0) * (max_duty - min_duty)
+        duty_y = min_duty + (actual_angle_y / 180.0) * (max_duty - min_duty)
+
+        servo1.changeDutyCycle(actual_angle_x)
+        servo2.changeDutyCycle(actual_angle_y)
 
 
 def main_loop(zed, model, servo1, servo2):
@@ -222,8 +193,9 @@ def main_loop(zed, model, servo1, servo2):
 
     zed.close()
     cv2.destroyAllWindows()
-    servo1.disable()
-    servo2.disable()
+    servo1.stop
+    servo2.stop
+    GPIO.cleanup()
 
 
 def main():
@@ -237,12 +209,12 @@ def main():
     kthread = KeyboardThread(my_callback)
 
     # Pin 32 = pwmchip3/pwm0
-    servo1 = ServoPWM(3, 0)
+    servo1 = GPIO.PWM(servoPin1, 50)
     # Pin 33 = pwmchip0/pwm0
-    servo2 = ServoPWM(0, 0)
+    servo2 = GPIO.PWM(servoPin2, 50)
 
-    servo1.enable()
-    servo2.enable()
+    servo1.start(7.5)
+    servo2.start(7.5)
 
     # Start the main loop
     main_loop(zed, model, servo1, servo2)
