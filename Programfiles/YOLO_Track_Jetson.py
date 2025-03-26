@@ -60,7 +60,7 @@ class KeyboardThread(threading.Thread):
 def my_callback(inp):
     global selected_object
     #evaluate the keyboard input
-    if inp == None:
+    if inp == 'q':
         print('Tracking stopped.')
         selected_object = None
     else:
@@ -163,6 +163,7 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
     angle_x = 35 + (x_center / 1280) * (145 - 35)
     angle_y = 35 + (y_center / 720) * (145 - 35)
 
+    print(selected_object)
     if selected_object != None:
         print("None")
         if fixed_camera == True:     
@@ -181,12 +182,12 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
             servo1.ChangeDutyCycle(duty_x)
             servo2.ChangeDutyCycle(duty_y)
             
-    else:
+    elif selected_object == None:
         # Set the servo to the center (DutyCycle: 7.5 == 90 degrees)
         print("else")
         servo1.ChangeDutyCycle(7.5)
         servo2.ChangeDutyCycle(7.5)
-    print(selected_object)
+    
 
 def startup_message():
     # Start up information
