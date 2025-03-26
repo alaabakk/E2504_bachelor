@@ -3,7 +3,7 @@ from ultralytics import YOLO
 
 class YoloDetector:
   def __init__(self, model_path, confidence):
-    self.model = YOLO(model_path)
+    self.model = YOLO(model_path, task="detect")
     self.classList = ["person"]
     self.confidence = confidence
 
