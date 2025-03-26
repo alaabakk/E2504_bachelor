@@ -126,9 +126,7 @@ def print_active_objects(active_objects):
 
 
 
-def servo_control(x1, y1, x2, y2, servo1, servo2):
-    global last_angle_x
-    global last_angle_y
+def servo_control_Gammel(x1, y1, x2, y2, servo1, servo2):
     # Calculate the center of the bounding box
     x_center = ((x2 - x1) / 2) + x1
     y_center = ((y2 - y1) / 2) + y1
@@ -154,6 +152,31 @@ def servo_control(x1, y1, x2, y2, servo1, servo2):
 
         servo1.ChangeDutyCycle(duty_x)
         servo2.ChangeDutyCycle(duty_y)
+
+def servo_control(x1, y1, x2, y2, servo1, servo2):
+    # Calculate the center of the bounding box
+    x_center = ((x2 - x1) / 2) + x1
+    y_center = ((y2 - y1) / 2) + y1
+    # Calculate the angle from 35 to 145 degrees
+    angle_x = 35 + (x_center / 1280) * (145 - 35)
+    angle_y = 35 + (y_center / 720) * (145 - 35)
+
+    if fixed_camera == True:     
+        pass
+
+    elif fixed_camera == False:
+        # 180 - to invert the direction of servos
+        angle_x = 180 - max(0, min(180, angle_x))
+        angle_y = 180 - max(0, min(180, angle_y))
+
+        min_duty = 2.5
+        max_duty = 12.5
+        duty_x = min_duty + (angle_x / 180.0) * (max_duty - min_duty)
+        duty_y = min_duty + (angle_y / 180.0) * (max_duty - min_duty)
+
+        servo1.ChangeDutyCycle(duty_x)
+        servo2.ChangeDutyCycle(duty_y)
+
 
 
 def main_loop(zed, model, servo1, servo2):
