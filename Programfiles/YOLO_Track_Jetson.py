@@ -187,6 +187,10 @@ def main_loop(zed, model, servo1, servo2):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
+    # Start up information
+    print("Program started. Press 'q' in the video window to stop the program.")
+    print("Enter the ID of the object you want to track, enter q to stop tracking.")
+
     # Define fixed width and height
     fixed_width = 1280
     fixed_height = 720
@@ -241,10 +245,6 @@ def main():
 
     servo1.start(7.5)
     servo2.start(7.5)
-
-    # Start up information
-    print("Program started. Press 'q' in the video window to stop the program.")
-    print("Enter the ID of the object you want to track, enter q to stop tracking.")
 
     # Start the main loop
     main_loop(zed, model, servo1, servo2)
