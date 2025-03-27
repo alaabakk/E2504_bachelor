@@ -175,7 +175,7 @@ def main_loop(zed, detector, tracker, servo1, servo2):
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
-            fps = zed.getCurrentFPS()
+            #fps = zed.getCurrentFPS()
             # Retrieve the left image from the ZED camera
             zed.retrieve_image(zed_image, sl.VIEW.LEFT)
             img_cv = np.array(zed_image.get_data(), dtype=np.uint8)
@@ -191,7 +191,7 @@ def main_loop(zed, detector, tracker, servo1, servo2):
             process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2)
 
             # Draw the FPS on the frame
-            draw_FPS(fps, img_cv)
+            #draw_FPS(fps, img_cv)
 
             # Resize the frame to fixed dimensions
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
