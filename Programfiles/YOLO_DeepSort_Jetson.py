@@ -158,6 +158,10 @@ def startup_message():
     print("Program started. Press 'q' in the video window to stop the program.")
     print("Enter the ID of the object you want to track, enter q to stop tracking.")
 
+def draw_FPS(fps, img_cv):
+    cv2.rectangle(img_cv, (0, 0), (100, 40), (0, 0, 0), -1)
+    cv2.putText(img_cv, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
 
 def main_loop(zed, detector, tracker, servo1, servo2):
     # Create a ZED Mat object to store images
@@ -171,6 +175,7 @@ def main_loop(zed, detector, tracker, servo1, servo2):
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
+            fps = zed.getCurrentFPS()
             # Retrieve the left image from the ZED camera
             zed.retrieve_image(zed_image, sl.VIEW.LEFT)
             img_cv = np.array(zed_image.get_data(), dtype=np.uint8)
@@ -184,6 +189,9 @@ def main_loop(zed, detector, tracker, servo1, servo2):
 
             # Process results and draw on the frame
             process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2)
+
+            # Draw the FPS on the frame
+            draw_FPS(fps, img_cv)
 
             # Resize the frame to fixed dimensions
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
