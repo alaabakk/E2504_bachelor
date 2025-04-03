@@ -19,7 +19,7 @@ volatile long encoderCountTilt = 0;
 
 void IRAM_ATTR encoderFuncRot() {
   if (digitalRead(ENC_ROT_B) == LOW) {
-    if (encoderCountRot < 1024) {
+    if (encoderCountRot < 512) {
       encoderCountRot++;
     }
   } else {
@@ -35,7 +35,7 @@ void IRAM_ATTR encoderFuncTilt() {
     encoderCountTilt--;
     }
   } else {
-    if (encoderCountTilt < 1024) {
+    if (encoderCountTilt < 512) {
     encoderCountTilt++;
     }
   }
@@ -67,7 +67,7 @@ static unsigned long lastPrint = 0;
     lastPrint = millis();
 
     // Read counts safely
-    long count1, count2;
+    unsigned long count1, count2;
     noInterrupts();
     count1 = encoderCountRot;
     count2 = encoderCountTilt;
