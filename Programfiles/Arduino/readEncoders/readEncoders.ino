@@ -55,8 +55,8 @@ void setup() {
 
   myservo1.attach(SERVO1_PIN);
   myservo2.attach(SERVO2_PIN);
-  myservo1.attach(SERVO1_PIN, 500, 2400);
-  myservo2.attach(SERVO2_PIN, 500, 2400);
+  //myservo1.attach(SERVO1_PIN, 500, 2400);
+  //myservo2.attach(SERVO2_PIN, 500, 2400);
 }
 
 void loop() {
