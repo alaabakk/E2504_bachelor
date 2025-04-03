@@ -67,7 +67,7 @@ static unsigned long lastPrint = 0;
     lastPrint = millis();
 
     // Read counts safely
-    unsigned long count1, count2;
+    long count1, count2;
     noInterrupts();
     count1 = encoderCountRot;
     count2 = encoderCountTilt;
