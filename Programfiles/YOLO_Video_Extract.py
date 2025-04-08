@@ -40,7 +40,7 @@ def save_video_from_zed(output_file="output_video.mp4", fps=30):
     height = resolution.height
 
     # Initialize OpenCV VideoWriter
-    fourcc = cv2.VideoWriter_fourcc(*'MP4V')  # Codec for MP4 files
+    fourcc = cv2.VideoWriter_fourcc(*'H264')  # Codec for MP4 files
     out = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
 
     print(f"Recording video to {output_file}... Press 'q' to stop.")
