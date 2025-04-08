@@ -119,7 +119,6 @@ def serial_print(ser, x1, y1, x2, y2):
     message2 = 360 - (y1 + y2) / 2
     message = f"{message1} , {message2}\n"
     ser.write(message.encode())
-    time.sleep(0.1)
 
 def startup_message():
     print("\nYOLO Object Detection with ZED on Jetson")
