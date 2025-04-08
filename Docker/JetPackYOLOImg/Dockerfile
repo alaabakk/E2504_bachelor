@@ -25,4 +25,5 @@ WORKDIR /usr/local/zed
 
 RUN python3 -m pip install PyOpenGL && \
     python3 -m pip install ultralytics && \
+    python3 -m pip install pyserial && \
     git clone https://github.com/alaabakk/E2504_bachelor
