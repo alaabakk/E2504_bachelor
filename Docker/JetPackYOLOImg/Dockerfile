@@ -26,5 +26,9 @@ WORKDIR /usr/local/zed
 RUN python3 -m pip install PyOpenGL && \
     python3 -m pip install ultralytics && \
     python3 -m pip install pyserial && \
+<<<<<<< HEAD
     python3 -m pip install deep-sort-realtime && \
+=======
+>>>>>>> 58ce03109b0c7baedb983a0796ea903a408a5938
     git clone https://github.com/alaabakk/E2504_bachelor
+    
