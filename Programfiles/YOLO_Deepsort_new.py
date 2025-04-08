@@ -37,7 +37,7 @@ def init_serial():
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the path to the model file
-MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.engine")
+MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.pt")
 
 def init_zed():
     # Create a Camera object
@@ -141,7 +141,8 @@ def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confiden
     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
 def serial_print(ser, x1, y1, x2, y2):
-    message = (x1 + x2)/2 
+    message = f"{640 - (x1 + x2)/2}\n" 
+    print(message)
     ser.write(message.encode())
     time.sleep(0.1)  # Wait for the message to be sent
 
