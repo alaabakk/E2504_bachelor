@@ -21,7 +21,7 @@ RUN apt-get update -y || true ; apt-get install --no-install-recommends git lsb-
 
 RUN ln -sf /usr/lib/aarch64-linux-gnu/tegra/libv4l2.so.0 /usr/lib/aarch64-linux-gnu/libv4l2.so
 
-WORKDIR /usr/local/zed
+WORKDIR /usr/local/zed/E2504_bachelor
 
 RUN python3 -m pip install PyOpenGL && \
     python3 -m pip install ultralytics && \
