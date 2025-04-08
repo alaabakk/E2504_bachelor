@@ -19,7 +19,7 @@ selected_object = 'q'
 fixed_camera = False
 
 ## Serial configuration
-PORT = 'COM4'  # Replace with your serial port
+PORT = 'COM1'  # Replace with your serial port
 BAUDRATE = 115200  # Replace with your baud rate
 TIMEOUT = 1  # Timeout in seconds
 
@@ -37,7 +37,7 @@ def init_serial():
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the path to the model file
-MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.pt")
+MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.engine")
 
 def init_zed():
     # Create a Camera object
