@@ -44,9 +44,9 @@ def progress_bar(percent_done, bar_length=50):
 
 def main():
     # Get input parameters
-    svo_input_path = "SVO_Videos/Input/Zed_input.svo"
+    svo_input_path = "SVO_Videos/Input/Zed_input.svo2"
     output_dir = opt.output_path_dir
-    avi_output_path = "SVO_Videos/Output/Zed_output.svo"
+    avi_output_path = "SVO_Videos/Output"
     output_as_video = True    
     app_type = AppType.LEFT_AND_RIGHT
     if opt.mode == 1 or opt.mode == 3:
