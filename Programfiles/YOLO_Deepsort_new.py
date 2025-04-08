@@ -144,9 +144,6 @@ def serial_print(ser, x1, y1, x2, y2):
     message1 = 640 - (x1 + x2)/2 
     message2 = 360 - (y1 + y2)/2
     message = f"{message1} , {message2}\n"
-    #print(message1)
-    #print(message2)
-    print(message)
     ser.write(message.encode())
     time.sleep(0.1)  # Wait for the message to be sent
 
