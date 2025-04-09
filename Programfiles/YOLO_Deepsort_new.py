@@ -19,7 +19,7 @@ selected_object = 'q'
 fixed_camera = False
 
 ## Serial configuration
-PORT = 'COM1'  # Replace with your serial port
+PORT = 'COM4'  # Replace with your serial port
 BAUDRATE = 115200  # Replace with your baud rate
 TIMEOUT = 1  # Timeout in seconds
 
@@ -37,7 +37,7 @@ def init_serial():
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the path to the model file
-MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.engine")
+MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.pt")
 
 def init_zed():
     # Create a Camera object
@@ -104,7 +104,7 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser):
         if selected_object == str(tracking_id):
             # Draw bounding box
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
-
+            
             serial_print(ser, x1, y1, x2, y2)
 
 
@@ -143,9 +143,10 @@ def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confiden
 def serial_print(ser, x1, y1, x2, y2):
     message1 = 640 - (x1 + x2)/2 
     message2 = 360 - (y1 + y2)/2
-    message = f"{message1} , {message2}\n"
+    message = f"{str(message1)},{str(message2)}\n"
+    print(message)
+    print(f"Serial message: {message}")
     ser.write(message.encode())
-    time.sleep(0.1)  # Wait for the message to be sent
 
     
 def startup_message():
@@ -164,7 +165,7 @@ def draw_FPS(fps, img_cv):
 def main_loop(zed, detector, tracker, ser):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
-
+    
     # Define fixed width and height
     fixed_width = 1280
     fixed_height = 720
@@ -218,6 +219,9 @@ def main():
 
     # Initialize serial communication
     ser = init_serial()
+    if ser is None:
+        print("Exiting due to serial port error.")
+        return
 
     # Initialize YOLO detector and tracker
     detector = YoloDetector(model_path=MODEL_PATH, confidence=0.75)
