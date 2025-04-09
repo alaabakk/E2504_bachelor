@@ -20,7 +20,6 @@ def main():
     if not ret:
       break
 
-    start_time = time.perf_counter()
     detections = detector.detect(frame)
     tracking_ids, boxes = tracker.track(detections, frame)
 

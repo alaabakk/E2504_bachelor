@@ -1,10 +1,9 @@
 from deep_sort_realtime.deepsort_tracker import DeepSort
-import torchreid
 
 class Tracker:
   def __init__(self):
     self.object_tracker = DeepSort(
-        max_age=35,
+        max_age=30,
         n_init=3,
         nms_max_overlap=0.3,
         max_cosine_distance=0.8,
@@ -13,7 +12,7 @@ class Tracker:
         embedder="torchreid",
         half=True,
         bgr=True,
-        embedder_model_name=None,
+        embedder_model_name="osnet_ain_x1_0",
         embedder_wts=None,
         polygon=False,
         today=None
