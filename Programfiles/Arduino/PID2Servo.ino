@@ -8,8 +8,8 @@ static const int servoTiltPin = 19;
 #define ENC_PAN_A 32
 #define ENC_PAN_B 33
 
-#define ENC_TILT_A 35
-#define ENC_TILT_B 34
+#define ENC_TILT_A 34
+#define ENC_TILT_B 35
 
 #define PPR 4096  // 1024 PPR encoder, 4x kvadratur
 
@@ -24,8 +24,8 @@ volatile uint8_t lastEncodedPan = 0;
 volatile uint8_t lastEncodedTilt = 0;
 
 float maxSpeed = 90.0; // grader per sekund ved 100% pådrag
-float servoPanPos = 90.0; // startposisjon i midten
-float servoTiltPos = 90.0;
+float servoPanPos = 82.0; // startposisjon i midten
+float servoTiltPos = 98.0;
 float SP_pan;
 float SP_tilt;
 float PV_pan;
@@ -68,13 +68,13 @@ void IRAM_ATTR updateEncoderTilt() {
 void controlPanServo(float U_pan, float dt ) {
   float deltaPos = (U_pan / 100.0) * maxSpeed * dt;
   servoPanPos += deltaPos;
-  servoPanPos = constrain(servoPanPos, 10.0, 170.0);
+  servoPanPos = constrain(servoPanPos, 5.0, 160.0);
 }
 
 void controlTiltServo(float U_tilt, float dt ) {
   float deltaPos = (U_tilt / 100.0) * maxSpeed * dt;
   servoTiltPos += deltaPos;
-  servoTiltPos = constrain(servoTiltPos, 10.0, 170.0);
+  servoTiltPos = constrain(servoTiltPos, 60.0, 120.0);
 }
 
 
@@ -172,11 +172,14 @@ void loop() {
   lastTime = now;
 
   // Les encoderposisjon
-  long count;
+  long count_pan;
+  long count_tilt;
   noInterrupts();
-  count = encoderCountPan;
+  count_pan = encoderCountPan;
+  count_tilt = encoderCountTilt;
   interrupts();
-  float PV_pan = -(360.0 * count) / PPR;
+  float PV_pan = -(360.0 * count_pan) / PPR;
+  float PV_tilt = -(360.0 * count_tilt) / PPR;
 
   // Les ønsket posisjon fra potmeter
   if (Serial.available()) {
@@ -192,26 +195,28 @@ void loop() {
       int panDeltaPixel = pan.toInt();
       int tiltDeltaPixel = tilt.toInt();
 
-      float panDeltaAngle = map(panDeltaPixel, -640, 640, -55, 55);
-      float tiltDeltaAngle = map(tiltDeltaPixel, -360, 360, -47.5, 47.5);
+      float panDeltaAngle = ((float)(panDeltaPixel + 640) / 1280.0) * 110.0 - 55.0;
+      float tiltDeltaAngle = ((float)(tiltDeltaPixel + 360) / 720.0) * 95.0 - 47.5;
 
       SP_pan = PV_pan + panDeltaAngle;
       SP_tilt = PV_tilt + tiltDeltaAngle;
 
       SP_pan = constrain(SP_pan, -80, 80);
-      SP_tilt = constrain(SP_tilt, -80, 80);    
+      SP_tilt = constrain(SP_tilt, -80, 80); 
+      SP_tilt = map(SP_tilt, -80, 80, 80, -80);   
     }
 
   }
 
   // PID
   U_pan = pid_pan.compute(PV_pan, SP_pan, dt); // -100 til +100 prosent
-  U_tilt = pid_tilt.compute(PV_pan, SP_pan, dt); // -100 til +100 prosent
+  U_tilt = pid_tilt.compute(PV_tilt, SP_tilt, dt); // -100 til +100 prosent
   // Simulert hastighetsstyring
 
   controlPanServo(U_pan, dt);
   controlTiltServo(U_tilt, dt);
   servoPan.write(servoPanPos);
+  servoTilt.write(servoTiltPos);
 
 
 
