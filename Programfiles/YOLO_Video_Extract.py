@@ -38,10 +38,16 @@ def save_video_from_zed(output_file="output_video.mp4", fps=30):
     resolution = zed.get_camera_information().camera_configuration.resolution
     width = resolution.width
     height = resolution.height
-
+    print(f"Resolution: width={width}, height={height}")
     # Initialize OpenCV VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'H264')  # Codec for MP4 files
     out = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
+
+    if not out.isOpened():
+        print("Failed to open VideoWriter!")
+        zed.close()
+        return
+
 
     print(f"Recording video to {output_file}... Press 'q' to stop.")
 
@@ -72,4 +78,4 @@ def save_video_from_zed(output_file="output_video.mp4", fps=30):
     print(f"Video saved to {output_file}")
 
 if __name__ == "__main__":
-    save_video_from_zed(output_file="MP4_Videos/zed_output14.mp4", fps=30)
+    save_video_from_zed(output_file="MP4_Videos/zed_output1.mp4", fps=30)
