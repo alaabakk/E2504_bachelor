@@ -29,7 +29,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "Models/yolov8s.engine")
+    model_path = os.path.join(script_dir, "Models/yolov8s.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -80,7 +80,7 @@ def main_loop(zed, model):
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
             # Predict using YOLO
-            results = model.predict(img_cv, stream=True)
+            results = model.predict(img_cv, stream=True, conf=0.1)
 
             # Process results and draw on the frame
             process_yolo_results(results, img_cv)
