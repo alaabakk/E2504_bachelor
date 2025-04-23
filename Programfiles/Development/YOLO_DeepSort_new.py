@@ -37,7 +37,7 @@ def init_serial():
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the path to the model file
-MODEL_PATH = os.path.join(script_dir, "Models/yolov8s.pt")
+MODEL_PATH = os.path.join(script_dir, "Models/customYOLOv8s_1.pt")
 
 def init_zed():
     # Create a Camera object

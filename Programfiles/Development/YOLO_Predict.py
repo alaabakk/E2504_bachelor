@@ -31,10 +31,10 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "Models/customYOLOv8s_1.onnx")
+    model_path = os.path.join(script_dir, "Models/customYOLOv8s_2.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
-    return model
+    return model 
 
 
 def process_yolo_results(results, img_cv):
