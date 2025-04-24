@@ -21,14 +21,12 @@ xhost +si:localuser:root
 #   -v /tmp/.X11-unix         -> Mount the X11 socket directory so GUIs can be displayed
 #   -v /usr/local/zed/resources -> Bind-mount ZED resources to persist AI models between runs
 #   guulkittil/jp_zed:36.4.3_4.2 -> The Docker image to run
+
 docker run --gpus all -it --privileged \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /usr/local/zed/resources:/usr/local/zed/resources \
-    guulkittil/l4t-pytorch:r36.4.0
-
-
-
+    guulkittil/l4t-pytorch-zed:36.4.0_4.2
 
 # -----------------------------------------------------------------------------
 # Tips for container lifecycle management:
@@ -46,4 +44,3 @@ docker run --gpus all -it --privileged \
 #      docker rm <container-id>
 #    - Or, add the '--rm' flag in 'docker run' to automatically remove the
 #      container upon exit.
-
