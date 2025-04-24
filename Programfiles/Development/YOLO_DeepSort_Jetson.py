@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 import os
 import threading
-import Jetson.GPIO as GPIO
 
 from DetectorDeepSort import YoloDetector
 from TrackerDeepSort import Tracker
@@ -15,9 +14,7 @@ last_active_objects = []
 selected_object = 'q'
 
 fixed_camera = False
-GPIO.setmode(GPIO.BOARD)
-servoPin1 = 32
-servoPin2 = 33
+
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the path to the model file
@@ -63,7 +60,7 @@ def my_callback(inp):
         print('Your now tracking object:', inp)
         selected_object = inp
 
-def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2):
+def process_yolo_results(detections, tracking_ids, boxes, img_cv):
     global active_objects
     active_objects = []
     global selected_object
@@ -88,34 +85,16 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2
         if selected_object == str(tracking_id):
             # Draw bounding box
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
-            # Control the servo
-            servo_control(x1, y1, x2, y2, servo1, servo2)
+
 
         else:
             # Draw bounding box
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence)
 
-            # Check if no object is selected
-            if selected_object == 'q':
-                # Control the servo
-                servo_control(x1, y1, x2, y2, servo1, servo2)
 
 
     return active_objects
 
-def print_active_objects(active_objects):
-    global last_active_objects
-    if active_objects != last_active_objects:
-        if active_objects:
-            print("\nActive Objects:")
-            print(f"{'ID':<10}{'Type':<15}")
-            print("-" * 25)
-            for obj in active_objects:
-                print(f"{obj[0]:<10}{obj[1]:<15}")
-        else:
-            print("\nNo active objects detected.")
-
-    last_active_objects = active_objects
 
 def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
     # Draw bounding box
@@ -163,7 +142,7 @@ def draw_FPS(fps, img_cv):
     cv2.putText(img_cv, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
 
-def main_loop(zed, detector, tracker, servo1, servo2):
+def main_loop(zed, detector, tracker):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
@@ -188,7 +167,7 @@ def main_loop(zed, detector, tracker, servo1, servo2):
             tracking_ids, boxes = tracker.track(detections, img_cv)
 
             # Process results and draw on the frame
-            process_yolo_results(detections, tracking_ids, boxes, img_cv, servo1, servo2)
+            process_yolo_results(detections, tracking_ids, boxes, img_cv)
 
             # Draw the FPS on the frame
             #draw_FPS(fps, img_cv)
@@ -206,15 +185,11 @@ def main_loop(zed, detector, tracker, servo1, servo2):
                 startup_message()
                 first_iteration = False
 
-    # Sets servo to center position and stops the program
-    servo1.ChangeDutyCycle(7.5)
-    servo2.ChangeDutyCycle(7.5)
+
     
     zed.close()
     cv2.destroyAllWindows()
-    servo1.stop
-    servo2.stop
-    GPIO.cleanup()
+
 
 
 def main():
@@ -228,16 +203,10 @@ def main():
     # Start the keyboard input thread
     kthread = KeyboardThread(my_callback)
 
-    # Pin 32 = pwmchip3/pwm0
-    servo1 = GPIO.PWM(servoPin1, 50)
-    # Pin 33 = pwmchip0/pwm0
-    servo2 = GPIO.PWM(servoPin2, 50)
 
-    servo1.start(7.5)
-    servo2.start(7.5)
 
     # Start the main loop
-    main_loop(zed, detector, tracker, servo1, servo2)
+    main_loop(zed, detector, tracker)
 
 
 if __name__ == "__main__":
