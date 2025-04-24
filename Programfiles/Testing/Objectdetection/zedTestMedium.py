@@ -6,9 +6,15 @@ import time
 import os
 import threading
 
+import pandas as pd
+
 ## Global variables  
 selected_object = None 
 start_time, frame_count = time.time(), 0
+
+## Variables for data collection
+frames_list = []
+fps_list = []
 
 
 
@@ -39,7 +45,7 @@ def init_object_detection(zed):
     obj_param = sl.ObjectDetectionParameters()
     obj_param.enable_tracking=False
     obj_param.enable_segmentation=True
-    obj_param.detection_model = sl.OBJECT_DETECTION_MODEL.MULTI_CLASS_BOX_ACCURATE
+    obj_param.detection_model = sl.OBJECT_DETECTION_MODEL.MULTI_CLASS_BOX_MEDIUM
 
     if obj_param.enable_tracking :
         positional_tracking_param = sl.PositionalTrackingParameters()
@@ -54,7 +60,7 @@ def init_object_detection(zed):
         exit()
 
     obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
-    obj_runtime_param.detection_confidence_threshold = 60
+    obj_runtime_param.detection_confidence_threshold = 70
 
     return obj_param, obj_runtime_param
 
@@ -97,11 +103,15 @@ def calculateFPS():
 
     if elapsed_time > 1:
         fps = frame_count / elapsed_time
-        print(f"FPS: {fps:.2f}")
+        fps = int(fps)
         frame_count = 0
         start_time = current_time
+        return fps, True
+
 
     frame_count += 1
+    return 0, False
+
 
 
 def calculateDistance(middle, depth_map):
@@ -110,6 +120,18 @@ def calculateDistance(middle, depth_map):
     distance = depth_value[1]
 
     return distance
+
+
+def save_data_to_excel():
+    # Save data to Excel
+    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_medium.xlsx")
+    results_path = os.path.normpath(results_path)
+
+    df = pd.DataFrame({
+        "Frame": frames_list,
+        "FPS": fps_list
+    })
+    df.to_excel(results_path, index=False)
 
 
 def process_objects(objects, img_cv, depth_map):
@@ -128,6 +150,7 @@ def process_objects(objects, img_cv, depth_map):
             middle = (int(topleft[0] + (bottomright[0] - topleft[0]) / 2), int(topleft[1] + (bottomright[1] - topleft[1]) / 2))
 
             distance = calculateDistance(middle, depth_map)
+
 
             if selected_object == str(obj.id):
                 # Draw red bounding box and label
@@ -165,9 +188,21 @@ def main_loop(zed, obj_runtime_param):
             process_objects(objects, img_cv, depth_map)
 
             # Calculate FPS
-            calculateFPS()
+            fps_new, state = calculateFPS()
+            if state:
+                fps = fps_new
+
+            cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
+            cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
 
             cv2.imshow("Object detection with ZED", img_cv)
+
+
+            # Save data for analysis
+            frames_list.append(len(frames_list))
+            fps_list.append(fps)
+
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -176,6 +211,7 @@ def main_loop(zed, obj_runtime_param):
     zed.close()
     cv2.destroyAllWindows()
 
+    save_data_to_excel()
 
 
 def main():
