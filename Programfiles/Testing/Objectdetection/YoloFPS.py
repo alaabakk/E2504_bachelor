@@ -7,8 +7,6 @@ import os
 import time
 
 
-start_time, frame_count = time.time(), 0
-
 
 def init_zed():
     # Create a Camera object
@@ -43,21 +41,25 @@ def init_yolo():
     return model 
 
 
-def calculateFPS():
-    # Calculate the FPS based on the time taken to process each frame
-    global start_time, frame_count
-    current_time = time.time()
-    elapsed_time = current_time - start_time
 
-    if elapsed_time > 1:
-        fps = frame_count / elapsed_time
-        fps = int(fps)
-        frame_count = 0
-        start_time = current_time
-        return fps, True
+class FPSCounter:
+    def __init__(self):
+        self.start_time = time.perf_counter()
+        self.frame_count = 0
 
-    frame_count += 1
-    return 0, False
+    def calculateFPS(self):
+        current_time = time.perf_counter()
+        elapsed_time = current_time - self.start_time
+
+        self.frame_count += 1
+
+        if elapsed_time > 1.0:
+            fps = int(self.frame_count / elapsed_time)
+            self.start_time = current_time
+            self.frame_count = 0
+            return fps, True
+        
+        return 0, False
 
 
 
@@ -92,7 +94,7 @@ def process_yolo_results(results, img_cv):
 
                 
 
-def main_loop(zed, model):
+def main_loop(zed, model, fps_counter):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
@@ -111,10 +113,11 @@ def main_loop(zed, model):
             # Process results and draw on the frame
             process_yolo_results(results, img_cv)
 
-            # Calculate FPS
-            fps_new, state = calculateFPS()
-            if state:
+
+            fps_new, updated = fps_counter.calculateFPS()
+            if updated:
                 fps = fps_new
+                
 
             cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
             cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
@@ -136,8 +139,11 @@ def main():
     # Initialize YOLO model
     model = init_yolo()
 
+    # Create a FPSCounter object
+    fps_counter = FPSCounter()
+
     # Start the main loop
-    main_loop(zed, model)
+    main_loop(zed, model, fps_counter)
 
 
 if __name__ == "__main__":
