@@ -35,7 +35,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "../../../Models/yolov8s.engine")
+    model_path = os.path.join(script_dir, "../../../Models/yolov8s.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model 
@@ -60,6 +60,24 @@ class FPSCounter:
             return fps, True
         
         return 0, False
+    
+    def draw_fps(self, img, fps):
+        # Set styles
+        text = f"FPS: {fps}"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 0.6
+        thickness = 2
+        text_color = (255, 255, 255)
+        bg_color = (30, 30, 30)  # Dark grey
+        padding = 10
+
+        # Get text size
+        (w, h), _ = cv2.getTextSize(text, font, scale, thickness)
+        x, y = 10, 30  # Top-left corner
+
+        # Draw rounded rectangle (you can swap to plain if preferred)
+        cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
+        cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
 
 
@@ -110,9 +128,7 @@ def main_loop(zed, model, fps_counter):
             fps_new, updated = fps_counter.calculateFPS()
             if updated:
                 fps = fps_new
-                
-            cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
-            cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            fps_counter.draw_fps(img_cv, fps)
 
 
             # Display the frame
