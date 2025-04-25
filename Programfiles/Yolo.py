@@ -150,7 +150,7 @@ def main_loop(zed, model, fps_counter, fps):
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
             # Predict using YOLO
-            results = model.track(img_cv, stream=True, augment=True, verbose=False, device=0)
+            results = model.track(img_cv, stream=True, augment=True, verbose=False, device=0, conf=0.7)
 
             # Process results and draw on the frame
             process_yolo_results(results, img_cv)
