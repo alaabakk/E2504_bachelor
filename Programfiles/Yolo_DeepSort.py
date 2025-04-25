@@ -158,7 +158,7 @@ def main_loop(zed, detector, tracker, fps_counter, fps):
 
 def main():
     zed = init_zed()
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.75)
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.70)
     tracker = Tracker()
     kthread = KeyboardThread(my_callback)
     fps_counter = FPSCounter()
