@@ -27,5 +27,6 @@ RUN python3 -m pip install PyOpenGL && \
     python3 -m pip install ultralytics && \
     python3 -m pip install pyserial && \
     python3 -m pip install deep-sort-realtime && \
-    git clone https://github.com/alaabakk/E2504_bachelor
+    git clone https://github.com/alaabakk/E2504_bachelor && \
+    cd E2504_bachelor && \
     
