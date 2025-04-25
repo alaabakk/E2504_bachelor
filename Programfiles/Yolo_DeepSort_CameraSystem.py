@@ -4,8 +4,8 @@ import numpy as np
 import cv2
 import os
 import threading
-import serial
 import time
+import serial
 
 from DetectorDeepSort import YoloDetector
 from TrackerDeepSort import Tracker
@@ -24,6 +24,7 @@ TIMEOUT = 1
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.engine")
+
 
 def init_zed():
     zed = sl.Camera()
@@ -70,8 +71,6 @@ def my_callback(inp):
         selected_object = inp
 
 def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser):
-    global active_objects
-    active_objects = []
     global selected_object
 
     names = {
@@ -108,7 +107,44 @@ def startup_message():
     print("Program started. Press 'q' in the terminal or window to stop.")
     print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
 
-def main_loop(zed, detector, tracker, ser):
+class FPSCounter:
+    def __init__(self):
+        self.start_time = time.perf_counter()
+        self.frame_count = 0
+
+    def calculateFPS(self):
+        current_time = time.perf_counter()
+        elapsed_time = current_time - self.start_time
+
+        self.frame_count += 1
+
+        if elapsed_time > 1.0:
+            fps = int(self.frame_count / elapsed_time)
+            self.start_time = current_time
+            self.frame_count = 0
+            return fps, True
+        
+        return 0, False
+    
+    def draw_fps(self, img, fps):
+        # Set styles
+        text = f"FPS: {fps}"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 0.6
+        thickness = 2
+        text_color = (255, 255, 255)
+        bg_color = (30, 30, 30)  # Dark grey
+        padding = 10
+
+        # Get text size
+        (w, h), _ = cv2.getTextSize(text, font, scale, thickness)
+        x, y = 10, 30  # Top-left corner
+
+        # Draw rounded rectangle (you can swap to plain if preferred)
+        cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
+        cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
+
+def main_loop(zed, detector, tracker, ser, fps_counter, fps):
     zed_image = sl.Mat()
     fixed_width = 1280
     fixed_height = 720
@@ -125,8 +161,14 @@ def main_loop(zed, detector, tracker, ser):
 
             process_yolo_results(detections, tracking_ids, boxes, img_cv, ser)
 
+            fps_new, updated = fps_counter.calculateFPS()
+            if updated:
+                fps = fps_new
+            fps_counter.draw_fps(img_cv, fps)
+
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
             cv2.imshow("YOLO Object Detection with ZED", resized_frame)
+
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -144,7 +186,9 @@ def main():
     detector = YoloDetector(model_path=MODEL_PATH, confidence=0.75)
     tracker = Tracker()
     kthread = KeyboardThread(my_callback)
-    main_loop(zed, detector, tracker, ser)
+    fps_counter = FPSCounter()
+    fps = 0 
+    main_loop(zed, detector, tracker, ser, fps_counter, fps)
 
 if __name__ == "__main__":
     main()
