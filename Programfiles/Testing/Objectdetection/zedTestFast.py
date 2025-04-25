@@ -22,9 +22,6 @@ confidence_list = []
 
 
 
-
-
-
 def init_zed():
     # Create a Camera object
     zed = sl.Camera()

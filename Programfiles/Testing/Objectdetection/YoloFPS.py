@@ -67,13 +67,6 @@ def process_yolo_results(results, img_cv):
     # Define the classes to keep
     names = {
         0: 'person',
-        1: 'car',
-        2: 'motorcycle',
-        4: 'airplane',
-        4: 'bus',
-        5: 'train',
-        6: 'truck',
-        7: 'boat',
     }
 
     # Process YOLO results and draw bounding boxes on the image
@@ -118,9 +111,9 @@ def main_loop(zed, model, fps_counter):
             if updated:
                 fps = fps_new
                 
-
             cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
             cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
 
             # Display the frame
             cv2.imshow("YOLO Object Detection with ZED", img_cv)
