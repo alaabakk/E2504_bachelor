@@ -15,6 +15,12 @@ start_time, frame_count = time.time(), 0
 ## Variables for data collection
 frames_list = []
 fps_list = []
+class_instance_count = 0
+class_instance_list = []
+confidence_list = []
+
+
+
 
 
 
@@ -108,10 +114,8 @@ def calculateFPS():
         start_time = current_time
         return fps, True
 
-
     frame_count += 1
     return 0, False
-
 
 
 def calculateDistance(middle, depth_map):
@@ -129,13 +133,23 @@ def save_data_to_excel():
 
     df = pd.DataFrame({
         "Frame": frames_list,
-        "FPS": fps_list
+        "FPS": fps_list,
+        "Class instances": class_instance_list
     })
+    conf_df = pd.DataFrame(confidence_list)
+    conf_df.columns = [f"Confidence_{i+1}" for i in range(conf_df.shape[1])]
+    df = pd.concat([df, conf_df], axis=1)
     df.to_excel(results_path, index=False)
 
 
 def process_objects(objects, img_cv, depth_map):
     global selected_object
+    global class_instance_count
+    class_instance_count = 0
+
+    inference_conf = []
+
+    conf_index = 0
 
 
     if objects.is_new:
@@ -143,30 +157,37 @@ def process_objects(objects, img_cv, depth_map):
         #print(f"{len(obj_array)} Object(s) detected")
 
         for obj in obj_array:
-            topleft = obj.bounding_box_2d[0]
-            bottomright = obj.bounding_box_2d[2]
+            if str(obj.label) == "PERSON": # Filter for the class "PERSON"
+                class_instance_count += 1
+                conf_index += 1
 
-            # Avstand til midten av objektet
-            middle = (int(topleft[0] + (bottomright[0] - topleft[0]) / 2), int(topleft[1] + (bottomright[1] - topleft[1]) / 2))
+                inference_conf.append(round(obj.confidence, 2))
 
-            distance = calculateDistance(middle, depth_map)
+                topleft = obj.bounding_box_2d[0]
+                bottomright = obj.bounding_box_2d[2]
 
+                # Avstand til midten av objektet
+                middle = (int(topleft[0] + (bottomright[0] - topleft[0]) / 2), int(topleft[1] + (bottomright[1] - topleft[1]) / 2))
 
-            if selected_object == str(obj.id):
-                # Draw red bounding box and label
-                cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 0, 255), 2)
-                label = f"{obj.id} ({int(obj.confidence)}%) dist: {distance:.2f}m"
-                cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                # Draw a dot with a diameter of 3 pixels at the center of the object
-                cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
+                distance = calculateDistance(middle, depth_map)
 
-            else:
-                # Draw green bounding box and label
-                cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
-                label = f"{obj.id} ({int(obj.confidence)}%) dist: {distance:.2f}m"
-                cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                # Draw a dot with a diameter of 3 pixels at the center of the object
-                cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
+                if selected_object == str(obj.id):
+                    # Draw red bounding box and label
+                    cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 0, 255), 2)
+                    label = f"{obj.id} ({int(obj.confidence)}%) dist: {distance:.2f}m"
+                    cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                    # Draw a dot with a diameter of 3 pixels at the center of the object
+                    cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
+
+                else:
+                    # Draw green bounding box and label
+                    cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
+                    label = f"{conf_index} ({int(obj.confidence)}%) dist: {distance:.2f}m"
+                    cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                    # Draw a dot with a diameter of 3 pixels at the center of the object
+                    cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
+    
+    confidence_list.append(tuple(inference_conf))
 
 
 def main_loop(zed, obj_runtime_param):
@@ -202,6 +223,7 @@ def main_loop(zed, obj_runtime_param):
             # Save data for analysis
             frames_list.append(len(frames_list))
             fps_list.append(fps)
+            class_instance_list.append(class_instance_count)
 
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
