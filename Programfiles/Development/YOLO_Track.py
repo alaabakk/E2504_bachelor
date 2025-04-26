@@ -22,6 +22,7 @@ def init_zed():
     init_params.coordinate_units = sl.UNIT.METER
     init_params.sdk_verbose = 1
     init_params.camera_resolution = sl.RESOLUTION.HD720
+    init_params.camera_fps = 30
 
     # Open the camera
     err = zed.open(init_params)

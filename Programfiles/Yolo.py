@@ -7,7 +7,7 @@ import threading
 import time
 
 ## Global variables
-selected_object = None
+selected_object = 'q'
 
 
 def init_zed():
@@ -40,22 +40,11 @@ def init_yolo():
     print("YOLO model initialized")
     return model
 
-class KeyboardThread(threading.Thread):
+def startup_message():
+    print("\nYOLO Object Detection with ZED on Jetson")
+    print("Program started. Press 'q' in the window to stop.")
+    print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
 
-    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
-        self.input_cbk = input_cbk
-        super(KeyboardThread, self).__init__(name=name, daemon=True)
-        self.start()
-
-    def run(self):
-        while True:
-            self.input_cbk(input()) #waits to get input + Return
-
-def my_callback(inp):
-    #evaluate the keyboard input
-    print('You selected object:', inp)
-    global selected_object
-    selected_object = inp
 
 class FPSCounter:
     def __init__(self):
@@ -94,6 +83,23 @@ class FPSCounter:
         cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
         cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
+class KeyboardThread(threading.Thread):
+
+    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
+        self.input_cbk = input_cbk
+        super(KeyboardThread, self).__init__(name=name, daemon=True)
+        self.start()
+
+    def run(self):
+        while True:
+            self.input_cbk(input()) #waits to get input + Return
+
+def my_callback(inp):
+    #evaluate the keyboard input
+    print('You selected object:', inp)
+    global selected_object
+    selected_object = inp
+
 
 def process_yolo_results(results, img_cv):
     global selected_object
@@ -115,21 +121,17 @@ def process_yolo_results(results, img_cv):
                 ID = int(box.id[0])  # Get the unique ID of the object
 
                 if selected_object == str(ID):
-                    # Draw bounding box
-                    cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    # Add label and confidence
-                    label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
-                    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    # Draw bounding box with red color for selected object
+                    draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), ID, type, confidence)
 
                 else:
-                                        # Draw bounding box
-                    cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    # Add label and confidence
-                    label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
-                    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    # Draw bounding box with green color for other objects
+                    draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), ID, type, confidence)
 
-
-
+def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
+    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
+    label_text = f"{tracking_id} {type} ({confidence:.2f})"
+    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
 
 def main_loop(zed, model, fps_counter, fps):
@@ -186,6 +188,8 @@ def main():
     fps_counter = FPSCounter()
     fps = 0
 
+    startup_message()
+    
     # Start the main loop
     main_loop(zed, model, fps_counter, fps)
 

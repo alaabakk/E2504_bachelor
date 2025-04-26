@@ -8,7 +8,7 @@ import time
 import serial
 
 ## Global variables
-selected_object = None
+selected_object = 'q'
 
 
 ## Serial configuration
@@ -47,22 +47,29 @@ def init_yolo():
     print("YOLO model initialized")
     return model
 
-class KeyboardThread(threading.Thread):
+def init_serial():
+    try:
+        ser = serial.Serial(PORT, BAUDRATE, timeout=TIMEOUT)
+        time.sleep(2)
+        print(f"Serial port {PORT} opened successfully.")
+        return ser
+    except serial.SerialException as e:
+        print(f"Error opening serial port {PORT}: {e}")
+        return None
 
-    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
-        self.input_cbk = input_cbk
-        super(KeyboardThread, self).__init__(name=name, daemon=True)
-        self.start()
+def serial_print(ser, x1, y1, x2, y2):
+    if not ser:
+        return
+    message1 = 640 - (x1 + x2) / 2
+    message2 = 360 - (y1 + y2) / 2
+    message = f"{message1} , {message2}\n"
+    ser.write(message.encode())
 
-    def run(self):
-        while True:
-            self.input_cbk(input()) #waits to get input + Return
+def startup_message():
+    print("\nYOLO Object Detection with ZED on Jetson")
+    print("Program started. Press 'q' in the window to stop.")
+    print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
 
-def my_callback(inp):
-    #evaluate the keyboard input
-    print('You selected object:', inp)
-    global selected_object
-    selected_object = inp
 
 class FPSCounter:
     def __init__(self):
@@ -101,7 +108,25 @@ class FPSCounter:
         cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
         cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
-def process_yolo_results(results, img_cv):
+class KeyboardThread(threading.Thread):
+
+    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
+        self.input_cbk = input_cbk
+        super(KeyboardThread, self).__init__(name=name, daemon=True)
+        self.start()
+
+    def run(self):
+        while True:
+            self.input_cbk(input()) #waits to get input + Return
+
+def my_callback(inp):
+    #evaluate the keyboard input
+    print('You selected object:', inp)
+    global selected_object
+    selected_object = inp
+
+
+def process_yolo_results(results, img_cv, ser):
     global selected_object
 
     # Define the classes to keep
@@ -121,24 +146,22 @@ def process_yolo_results(results, img_cv):
                 ID = int(box.id[0])  # Get the unique ID of the object
 
                 if selected_object == str(ID):
-                    # Draw bounding box
-                    cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    # Add label and confidence
-                    label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
-                    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    # Draw bounding box with red color for selected object
+                    draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), ID, type, confidence)
+
+                    serial_print(ser, x1, y1, x2, y2)
 
                 else:
-                                        # Draw bounding box
-                    cv2.rectangle(img_cv, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    # Add label and confidence
-                    label_text = f"{ID} {type} ({confidence:.2f})"  # Updated to show object name
-                    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    # Draw bounding box with green color for other objects
+                    draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), ID, type, confidence)
+
+def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
+    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
+    label_text = f"{tracking_id} {type} ({confidence:.2f})"
+    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
 
-
-
-
-def main_loop(zed, model, fps_counter, fps):
+def main_loop(zed, model, fps_counter, fps, ser):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
@@ -159,7 +182,7 @@ def main_loop(zed, model, fps_counter, fps):
             results = model.track(img_cv, stream=True, augment=True, verbose=False, device=0, conf=0.7)
 
             # Process results and draw on the frame
-            process_yolo_results(results, img_cv)
+            process_yolo_results(results, img_cv, ser)
 
             # Calculate and draw FPS
             fps_new, updated = fps_counter.calculateFPS()
@@ -185,6 +208,12 @@ def main():
     # Initialize YOLO model
     model = init_yolo()
 
+    # Initialize serial communication
+    ser = init_serial()
+    if ser is None:
+        print("Failed to initialize serial communication. Exiting.")
+        return
+
     # Start the keyboard input thread
     kthread = KeyboardThread(my_callback)
 
@@ -192,8 +221,10 @@ def main():
     fps_counter = FPSCounter()
     fps = 0
 
+    startup_message()
+
     # Start the main loop
-    main_loop(zed, model, fps_counter, fps)
+    main_loop(zed, model, fps_counter, fps, ser)
 
 
 if __name__ == "__main__":

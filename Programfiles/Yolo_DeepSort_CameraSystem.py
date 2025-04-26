@@ -51,49 +51,6 @@ def init_serial():
         print(f"Error opening serial port {PORT}: {e}")
         return None
 
-class KeyboardThread(threading.Thread):
-    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
-        self.input_cbk = input_cbk
-        super(KeyboardThread, self).__init__(name=name, daemon=True)
-        self.start()
-
-    def run(self):
-        while True:
-            self.input_cbk(input())
-
-def my_callback(inp):
-    global selected_object
-    if inp == 'q':
-        print('Tracking stopped.', inp)
-        selected_object = inp
-    else:
-        print('You are now tracking object:', inp)
-        selected_object = inp
-
-def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser):
-    global selected_object
-
-    names = {
-        0: 'person',
-        1: 'car',
-    }
-
-    for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
-        x1, y1, x2, y2 = map(int, bounding_box)
-        type = names.get(detection[1], "unknown")
-        confidence = round(detection[2], 2)
-
-        if selected_object == str(tracking_id):
-            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
-            serial_print(ser, x1, y1, x2, y2)
-        else:
-            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence)
-
-def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
-    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
-    label_text = f"{tracking_id} {type} ({confidence:.2f})"
-    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
 def serial_print(ser, x1, y1, x2, y2):
     if not ser:
         return
@@ -104,8 +61,9 @@ def serial_print(ser, x1, y1, x2, y2):
 
 def startup_message():
     print("\nYOLO Object Detection with ZED on Jetson")
-    print("Program started. Press 'q' in the terminal or window to stop.")
+    print("Program started. Press 'q' in the window to stop.")
     print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
+
 
 class FPSCounter:
     def __init__(self):
@@ -144,11 +102,55 @@ class FPSCounter:
         cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
         cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
+class KeyboardThread(threading.Thread):
+    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
+        self.input_cbk = input_cbk
+        super(KeyboardThread, self).__init__(name=name, daemon=True)
+        self.start()
+
+    def run(self):
+        while True:
+            self.input_cbk(input())
+
+def my_callback(inp):
+    global selected_object
+    if inp == 'q':
+        print('Tracking stopped.', inp)
+        selected_object = inp
+    else:
+        print('You are now tracking object:', inp)
+        selected_object = inp
+
+
+def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser):
+    global selected_object
+
+    names = {
+        0: 'person',
+        1: 'car',
+    }
+
+    for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
+        x1, y1, x2, y2 = map(int, bounding_box)
+        type = names.get(detection[1], "unknown")
+        confidence = round(detection[2], 2)
+
+        if selected_object == str(tracking_id):
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
+            serial_print(ser, x1, y1, x2, y2)
+        else:
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence)
+
+def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
+    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
+    label_text = f"{tracking_id} {type} ({confidence:.2f})"
+    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+
 def main_loop(zed, detector, tracker, ser, fps_counter, fps):
     zed_image = sl.Mat()
     fixed_width = 1280
     fixed_height = 720
-    first_iteration = True
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
@@ -173,9 +175,6 @@ def main_loop(zed, detector, tracker, ser, fps_counter, fps):
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-            if first_iteration:
-                startup_message()
-                first_iteration = False
 
     zed.close()
     cv2.destroyAllWindows()
@@ -183,11 +182,16 @@ def main_loop(zed, detector, tracker, ser, fps_counter, fps):
 def main():
     zed = init_zed()
     ser = init_serial()
+    if ser is None:
+        print("Serial port not available. Exiting.")
+        return
+    
     detector = YoloDetector(model_path=MODEL_PATH, confidence=0.70)
     tracker = Tracker()
     kthread = KeyboardThread(my_callback)
     fps_counter = FPSCounter()
     fps = 0 
+    startup_message()
     main_loop(zed, detector, tracker, ser, fps_counter, fps)
 
 if __name__ == "__main__":
