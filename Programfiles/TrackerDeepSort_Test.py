@@ -7,15 +7,15 @@ class Tracker:
         n_init=3,
         nms_max_overlap=0.3,
         max_cosine_distance=0.8,
-        nn_budget=None,
+        #nn_budget=None,
         override_track_class=None,
-        embedder="torchreid",
+        embedder="mobilenet",  #mobilenet, torchreid
         half=True,
         bgr=True,
-        embedder_model_name="osnet_ain_x1_0",
+        embedder_model_name=None, #
         embedder_wts=None,
-        polygon=False,
-        today=None
+        #polygon=False,
+        #today=None
     )
 
   def track(self, detections, frame):
