@@ -40,8 +40,6 @@ def init_yolo():
     print("YOLO model initialized")
     return model 
 
-
-
 class FPSCounter:
     def __init__(self):
         self.start_time = time.perf_counter()

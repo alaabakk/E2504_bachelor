@@ -12,10 +12,6 @@ from TrackerDeepSort import Tracker
 ## Global variables
 selected_object = 'q'
 
-fixed_camera = False
-
-
-
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.pt")
@@ -35,52 +31,11 @@ def init_zed():
         exit()
     return zed
 
-class KeyboardThread(threading.Thread):
-    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
-        self.input_cbk = input_cbk
-        super(KeyboardThread, self).__init__(name=name, daemon=True)
-        self.start()
-
-    def run(self):
-        while True:
-            self.input_cbk(input())
-
-def my_callback(inp):
-    global selected_object
-    if inp == 'q':
-        print('Tracking stopped.', inp)
-        selected_object = inp
-    else:
-        print('You are now tracking object:', inp)
-        selected_object = inp
-
-def process_yolo_results(detections, tracking_ids, boxes, img_cv):
-    global selected_object
-
-    names = {
-        0: 'person',
-        1: 'car',
-    }
-
-    for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
-        x1, y1, x2, y2 = map(int, bounding_box)
-        type = names.get(detection[1], "unknown")
-        confidence = round(detection[2], 2)
-
-        if selected_object == str(tracking_id):
-            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
-        else:
-            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence)
-
-def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
-    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
-    label_text = f"{tracking_id} {type} ({confidence:.2f})"
-    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
 def startup_message():
     print("\nYOLO Object Detection with ZED on Jetson")
-    print("Program started. Press 'q' in the terminal or window to stop.")
+    print("Program started. Press 'q' in the window to stop.")
     print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
+
 
 class FPSCounter:
     def __init__(self):
@@ -119,12 +74,65 @@ class FPSCounter:
         cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
         cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
+class KeyboardThread(threading.Thread):
+    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
+        self.input_cbk = input_cbk
+        super(KeyboardThread, self).__init__(name=name, daemon=True)
+        self.start()
+
+    def run(self):
+        while True:
+            self.input_cbk(input())
+
+def my_callback(inp):
+    global selected_object
+    if inp == 'q':
+        print('Tracking stopped.', inp)
+        selected_object = inp
+    else:
+        print('You are now tracking object:', inp)
+        selected_object = inp
+
+def calculateDistance(middle, depth_map):
+    # Get the depth value at the center of the object
+    depth_value = depth_map.get_value(middle[0], middle[1])
+    distance = depth_value[1]
+
+    return distance
+
+
+def process_yolo_results(detections, tracking_ids, boxes, img_cv, depth_map):
+    global selected_object
+
+    names = {
+        0: 'person',
+        1: 'car',
+    }
+
+    for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
+        x1, y1, x2, y2 = map(int, bounding_box)
+        type = names.get(detection[1], "unknown")
+        confidence = round(detection[2], 2)
+
+        # Avstand til midten av objektet
+        middle = (int(x1 + (x2 - x1) / 2), int(y1 + (y2 - y1) / 2))
+        distance = calculateDistance(middle, depth_map)
+
+        if selected_object == str(tracking_id):
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence, distance)
+        else:
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence, distance)
+
+def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence, distance):
+    cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
+    label_text = f"{tracking_id} {type} ({confidence:.2f}), distance: {distance:.2f} m"
+    cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
 
 def main_loop(zed, detector, tracker, fps_counter, fps):
     zed_image = sl.Mat()
     fixed_width = 1280
     fixed_height = 720
-    first_iteration = True
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
@@ -132,10 +140,14 @@ def main_loop(zed, detector, tracker, fps_counter, fps):
             img_cv = np.array(zed_image.get_data(), dtype=np.uint8)
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
+            #distanse
+            depth_map = sl.Mat()
+            zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
+
             detections = detector.detect(img_cv)
             tracking_ids, boxes = tracker.track(detections, img_cv)
 
-            process_yolo_results(detections, tracking_ids, boxes, img_cv)
+            process_yolo_results(detections, tracking_ids, boxes, img_cv, depth_map)
 
             fps_new, updated = fps_counter.calculateFPS()
             if updated:
@@ -149,9 +161,6 @@ def main_loop(zed, detector, tracker, fps_counter, fps):
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-            if first_iteration:
-                startup_message()
-                first_iteration = False
 
     zed.close()
     cv2.destroyAllWindows()
@@ -163,6 +172,7 @@ def main():
     kthread = KeyboardThread(my_callback)
     fps_counter = FPSCounter()
     fps = 0
+    startup_message
     main_loop(zed, detector, tracker, fps_counter, fps)
 
 if __name__ == "__main__":

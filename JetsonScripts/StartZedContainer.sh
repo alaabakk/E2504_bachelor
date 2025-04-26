@@ -26,7 +26,7 @@ docker run --gpus all -it --privileged \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /usr/local/zed/resources:/usr/local/zed/resources \
-    guulkittil/l4t-pytorch-zed:36.4.0_4.2
+    guulkittil/l4t-zed:36.4.0_4.2
 
 # -----------------------------------------------------------------------------
 # Tips for container lifecycle management:
