@@ -45,14 +45,3 @@ RUN git clone https://github.com/alaabakk/E2504_bachelor.git && \
 
 # Set working directory
 WORKDIR /usr/local/zed/E2504_bachelor
-
-<<<<<<< HEAD
-=======
-RUN python3 -m pip install PyOpenGL && \
-    python3 -m pip install ultralytics && \
-    python3 -m pip install pyserial && \
-    python3 -m pip install deep-sort-realtime && \
-    git clone https://github.com/alaabakk/E2504_bachelor && \
-    cd E2504_bachelor && \
-    
->>>>>>> c791d0392d9412c9b84fb202ba8907ea4e78a761
