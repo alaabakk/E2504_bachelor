@@ -121,8 +121,15 @@ def my_callback(inp):
         print('You are now tracking object:', inp)
         selected_object = inp
 
+def calculateDistance(middle, depth_map):
+    # Get the depth value at the center of the object
+    depth_value = depth_map.get_value(middle[0], middle[1])
+    distance = depth_value[1]
 
-def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser):
+    return distance
+
+
+def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser, depth_map):
     global selected_object
 
     names = {
@@ -135,15 +142,19 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser):
         type = names.get(detection[1], "unknown")
         confidence = round(detection[2], 2)
 
+        # Avstand til midten av objektet
+        middle = (int(x1 + (x2 - x1) / 2), int(y1 + (y2 - y1) / 2))
+        distance = calculateDistance(middle, depth_map)
+
         if selected_object == str(tracking_id):
-            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence)
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence, distance)
             serial_print(ser, x1, y1, x2, y2)
         else:
-            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence)
+            draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence, distance)
 
-def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence):
+def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confidence, distance):
     cv2.rectangle(img_cv, (x1, y1), (x2, y2), color, 2)
-    label_text = f"{tracking_id} {type} ({confidence:.2f})"
+    label_text = f"{tracking_id} {type} ({confidence:.2f}), distance: {distance:.2f} m"
     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
 
@@ -158,10 +169,14 @@ def main_loop(zed, detector, tracker, ser, fps_counter, fps):
             img_cv = np.array(zed_image.get_data(), dtype=np.uint8)
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
+            #distanse
+            depth_map = sl.Mat()
+            zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
+
             detections = detector.detect(img_cv)
             tracking_ids, boxes = tracker.track(detections, img_cv)
 
-            process_yolo_results(detections, tracking_ids, boxes, img_cv, ser)
+            process_yolo_results(detections, tracking_ids, boxes, img_cv, ser, depth_map)
 
             fps_new, updated = fps_counter.calculateFPS()
             if updated:
