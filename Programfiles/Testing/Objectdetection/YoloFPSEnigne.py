@@ -35,7 +35,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "../../../Models/yolov8n.engine")
+    model_path = os.path.join(script_dir, "../../../Models/yolov8l.engine")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model 
@@ -96,7 +96,7 @@ def main_loop(zed, model):
 
             # Convert RGBA to RGB
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
-            img_cv = cv2.resize(img_cv, (640, 640))
+            #img_cv = cv2.resize(img_cv, (640, 640))
 
             # Predict using YOLO
             results = model.predict(img_cv, stream=True, conf=0.7, verbose = True)
