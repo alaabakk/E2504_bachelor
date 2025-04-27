@@ -99,7 +99,7 @@ def main_loop(zed, model):
             #img_cv = cv2.resize(img_cv, (640, 640))
 
             # Predict using YOLO
-            results = model.predict(img_cv, stream=True, conf=0.7, verbose = True)
+            results = model.predict(img_cv, stream=True, conf=0.7, verbose = True, half=True)
 
             # Process results and draw on the frame
             process_yolo_results(results, img_cv)
