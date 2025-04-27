@@ -95,7 +95,7 @@ def main_loop(zed, model):
 
             # Convert RGBA to RGB
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
-            img_cv = cv2.resize(img_cv, (640, 640))
+            #img_cv = cv2.resize(img_cv, (640, 640))
 
             # Predict using YOLO
             results = model.predict(img_cv, stream=True, conf=0.7, verbose = True)
