@@ -63,13 +63,6 @@ def process_yolo_results(results, img_cv):
     # Define the classes to keep
     names = {
         0: 'person',
-        1: 'car',
-        2: 'motorcycle',
-        4: 'airplane',
-        4: 'bus',
-        5: 'train',
-        6: 'truck',
-        7: 'boat',
     }
 
     # Process YOLO results and draw bounding boxes on the image
