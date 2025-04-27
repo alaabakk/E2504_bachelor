@@ -87,6 +87,8 @@ def main_loop(zed, model):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
+    disp = True
+
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
             # Retrieve the left image from the ZED camera
@@ -100,19 +102,24 @@ def main_loop(zed, model):
             # Predict using YOLO
             results = model.predict(img_cv, stream=True, conf=0.7, verbose = True)
 
-            # Process results and draw on the frame
-            process_yolo_results(results, img_cv)
+            if disp:
+                # Process results and draw on the frame
+                process_yolo_results(results, img_cv)
 
-            # Calculate FPS
-            fps_new, state = calculateFPS()
-            if state:
-                fps = fps_new
+                # Calculate FPS
+                fps_new, state = calculateFPS()
+                if state:
+                    fps = fps_new
 
-            cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
-            cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
+                cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-            # Display the frame
-            cv2.imshow("YOLO Object Detection with ZED", img_cv)
+                # Display the frame
+                cv2.imshow("YOLO Object Detection with ZED", img_cv)
+
+                disp = False
+            else:
+                disp = True
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
