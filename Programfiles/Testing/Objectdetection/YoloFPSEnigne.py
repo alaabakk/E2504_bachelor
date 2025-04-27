@@ -87,7 +87,6 @@ def main_loop(zed, model):
     # Create a ZED Mat object to store images
     zed_image = sl.Mat()
 
-    disp = 0
 
     while True:
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
@@ -97,14 +96,10 @@ def main_loop(zed, model):
 
             # Convert RGBA to RGB
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
-            img_cv = cv2.resize(img_cv, (640, 640))
+            #img_cv = cv2.resize(img_cv, (640, 640))
 
             # Predict using YOLO
             results = model.predict(img_cv, stream=True, conf=0.7, verbose = True)
-
-            disp += 1
-            if disp % 2 == 0:
-                continue
 
             # Process results and draw on the frame
             process_yolo_results(results, img_cv)
