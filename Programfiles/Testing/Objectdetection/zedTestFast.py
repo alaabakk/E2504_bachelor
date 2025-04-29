@@ -19,7 +19,13 @@ class_instance_count = 0
 class_instance_list = []
 confidence_list = []
 
+bounding_box_list = []
 
+
+
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames")
+image_save_path = os.path.normpath(image_save_path)
+os.makedirs(image_save_path, exist_ok=True)
 
 
 def init_zed():
@@ -135,7 +141,11 @@ def save_data_to_excel():
     })
     conf_df = pd.DataFrame(confidence_list)
     conf_df.columns = [f"Confidence_{i+1}" for i in range(conf_df.shape[1])]
-    df = pd.concat([df, conf_df], axis=1)
+
+    bbox_df = pd.DataFrame(bounding_box_list)
+    bbox_df.columns = [f"BBox_{i+1}" for i in range(bbox_df.shape[1])]
+
+    df = pd.concat([df, conf_df, bbox_df], axis=1)
     df.to_excel(results_path, index=False)
 
 
@@ -145,6 +155,7 @@ def process_objects(objects, img_cv, depth_map):
     class_instance_count = 0
 
     inference_conf = []
+    inference_bounding_box = []
 
     conf_index = 0
 
@@ -159,6 +170,7 @@ def process_objects(objects, img_cv, depth_map):
                 conf_index += 1
 
                 inference_conf.append(round(obj.confidence, 2))
+                inference_bounding_box.append(obj.bounding_box_2d)
 
                 topleft = obj.bounding_box_2d[0]
                 bottomright = obj.bounding_box_2d[2]
@@ -185,6 +197,7 @@ def process_objects(objects, img_cv, depth_map):
                     cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
     
     confidence_list.append(tuple(inference_conf))
+    bounding_box_list.append(tuple(inference_bounding_box))
 
 
 def main_loop(zed, obj_runtime_param):
@@ -221,6 +234,12 @@ def main_loop(zed, obj_runtime_param):
             frames_list.append(len(frames_list))
             fps_list.append(fps)
             class_instance_list.append(class_instance_count)
+
+            if frames_list:
+                frame_id = frames_list[-1]
+                image_filename = f"frame_{frame_id:05d}.jpg"
+                image_path = os.path.join(image_save_path, image_filename)
+                cv2.imwrite(image_path, img_cv)
 
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
