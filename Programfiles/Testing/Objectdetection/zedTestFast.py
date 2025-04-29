@@ -21,9 +21,7 @@ confidence_list = []
 
 bounding_box_list = []
 
-
-
-image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames")
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames_fast_1")
 image_save_path = os.path.normpath(image_save_path)
 os.makedirs(image_save_path, exist_ok=True)
 
