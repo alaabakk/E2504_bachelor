@@ -20,13 +20,13 @@ xhost +si:localuser:root
 #   -e DISPLAY                -> Pass the host DISPLAY variable for GUI applications
 #   -v /tmp/.X11-unix         -> Mount the X11 socket directory so GUIs can be displayed
 #   -v /usr/local/zed/resources -> Bind-mount ZED resources to persist AI models between runs
-#   guulkittil/jp_zed:36.4.3_4.2 -> The Docker image to run
+#   guulkittil/l4t_zed:36.4.0_4.2 -> The Docker image to run
 
 docker run --gpus all -it --privileged \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /usr/local/zed/resources:/usr/local/zed/resources \
-    guulkittil/l4t-zed:36.4.0_4.2
+    guulkittil/l4t-zed:36.4.3_4.2
 
 # -----------------------------------------------------------------------------
 # Tips for container lifecycle management:
