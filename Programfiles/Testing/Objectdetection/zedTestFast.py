@@ -67,7 +67,7 @@ def init_object_detection(zed):
         exit()
 
     obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
-    obj_runtime_param.detection_confidence_threshold = 70
+    obj_runtime_param.detection_confidence_threshold = 60
 
     return obj_param, obj_runtime_param
 
@@ -98,25 +98,48 @@ def init():
     print("Object detection initialized")
     kthread = KeyboardThread(input_cbk=my_callback)
     print("Keyboard thread initialized")
+    fps_counter = FPSCounter()
+    fps = 0
 
-    return zed, obj_runtime_param
+    return zed, obj_runtime_param, fps_counter, fps
 
 
-def calculateFPS():
-    # Calculate the FPS based on the time taken to process each frame
-    global start_time, frame_count
-    current_time = time.time()
-    elapsed_time = current_time - start_time
+class FPSCounter:
+    def __init__(self):
+        self.start_time = time.perf_counter()
+        self.frame_count = 0
 
-    if elapsed_time > 1:
-        fps = frame_count / elapsed_time
-        fps = int(fps)
-        frame_count = 0
-        start_time = current_time
-        return fps, True
+    def calculateFPS(self):
+        current_time = time.perf_counter()
+        elapsed_time = current_time - self.start_time
 
-    frame_count += 1
-    return 0, False
+        self.frame_count += 1
+
+        if elapsed_time > 1.0:
+            fps = int(self.frame_count / elapsed_time)
+            self.start_time = current_time
+            self.frame_count = 0
+            return fps, True
+        
+        return 0, False
+    
+    def draw_fps(self, img, fps):
+        # Set styles
+        text = f"FPS: {fps}"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 0.6
+        thickness = 2
+        text_color = (255, 255, 255)
+        bg_color = (30, 30, 30)  # Dark grey
+        padding = 10
+
+        # Get text size
+        (w, h), _ = cv2.getTextSize(text, font, scale, thickness)
+        x, y = 10, 30  # Top-left corner
+
+        # Draw rounded rectangle (you can swap to plain if preferred)
+        cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
+        cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
 
 def calculateDistance(middle, depth_map):
@@ -198,7 +221,7 @@ def process_objects(objects, img_cv, depth_map):
     bounding_box_list.append(tuple(inference_bounding_box))
 
 
-def main_loop(zed, obj_runtime_param):
+def main_loop(zed, obj_runtime_param, fps_counter, fps):
     objects = sl.Objects()
     
     
@@ -217,9 +240,10 @@ def main_loop(zed, obj_runtime_param):
             process_objects(objects, img_cv, depth_map)
 
             # Calculate FPS
-            fps_new, state = calculateFPS()
-            if state:
+            fps_new, updated = fps_counter.calculateFPS()
+            if updated:
                 fps = fps_new
+            fps_counter.draw_fps(img_cv, fps)
 
             cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
             cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
@@ -251,8 +275,8 @@ def main_loop(zed, obj_runtime_param):
 
 
 def main():
-    zed, obj_runtime_param = init()
-    main_loop(zed, obj_runtime_param)
+    zed, obj_runtime_param, fps_counter, fps = init()
+    main_loop(zed, obj_runtime_param, fps_counter, fps)
 
 
 if __name__ == "__main__":
