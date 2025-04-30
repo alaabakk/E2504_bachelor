@@ -245,9 +245,6 @@ def main_loop(zed, obj_runtime_param, fps_counter, fps):
                 fps = fps_new
             fps_counter.draw_fps(img_cv, fps)
 
-            cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
-            cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
 
             cv2.imshow("Object detection with ZED", img_cv)
 
