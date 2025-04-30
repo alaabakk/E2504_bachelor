@@ -172,9 +172,9 @@ void loop() {
       SP_pan = PV_pan + panDeltaAngle;
       SP_tilt = PV_tilt + tiltDeltaAngle;
 
-      SP_pan = constrain(SP_pan, -80, 80);
-      SP_tilt = constrain(SP_tilt, -80, 80);
-      SP_tilt = map(SP_tilt, -80, 80, 80, -80);
+      SP_pan = constrain(SP_pan, -55, 55);
+      SP_tilt = constrain(SP_tilt, -45, 45);
+      SP_tilt = map(SP_tilt, -45, 45, 45, -45);  // inverter tilt
     }
   }
 
