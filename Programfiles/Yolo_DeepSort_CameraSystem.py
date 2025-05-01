@@ -17,13 +17,13 @@ selected_object = 'q'
 fixed_camera = False
 
 ## Serial configuration
-PORT = '/dev/ttyUSB0'  # <-- Use known USB port
+PORT = 'COM4'#'/dev/ttyUSB0'  # <-- Use known USB port
 BAUDRATE = 115200
 TIMEOUT = 1
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.engine")
+MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.pt")
 
 
 def init_zed():
@@ -51,12 +51,13 @@ def init_serial():
         print(f"Error opening serial port {PORT}: {e}")
         return None
 
-def serial_print(ser, x1, y1, x2, y2):
+def serial_print(ser, middle):
     if not ser:
         return
-    message1 = 640 - (x1 + x2) / 2
-    message2 = 360 - (y1 + y2) / 2
+    message1 = middle[0]
+    message2 = middle[1]
     message = f"{message1} , {message2}\n"
+    print(message)
     ser.write(message.encode())
 
 def startup_message():
@@ -123,8 +124,11 @@ def my_callback(inp):
 
 def calculateDistance(middle, depth_map):
     # Get the depth value at the center of the object
-    depth_value = depth_map.get_value(middle[0], middle[1])
-    distance = depth_value[1]
+    if middle[0] <= 0 and middle[0] >= 1280 and middle[1] <= 0 and middle[1] >= 720:
+        depth_value = depth_map.get_value(middle[0], middle[1])
+        distance = depth_value[1]
+    else:
+        distance = 0.0
 
     return distance
 
@@ -148,7 +152,7 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser, depth_map
 
         if selected_object == str(tracking_id):
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence, distance)
-            serial_print(ser, x1, y1, x2, y2)
+            serial_print(ser, middle)
         else:
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence, distance)
 
@@ -201,7 +205,7 @@ def main():
         print("Serial port not available. Exiting.")
         return
     
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.70)
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.40)
     tracker = Tracker()
     kthread = KeyboardThread(my_callback)
     fps_counter = FPSCounter()
