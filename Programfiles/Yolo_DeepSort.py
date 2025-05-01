@@ -68,7 +68,7 @@ class FPSCounter:
         scale = 0.6
         thickness = 2
         text_color = (255, 255, 255)
-        bg_color = (30, 30, 30)  # Dark grey
+        bg_color = (30, 30, 30)
         padding = 10
 
         # Get text size
