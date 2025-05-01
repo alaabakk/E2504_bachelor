@@ -16,7 +16,7 @@ selected_object = 'q'  # Variable to store the ID of the selected object for tra
 
 # Define the path to the YOLO model
 script_dir = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.pt")
+MODEL_PATH = os.path.join(script_dir, "../Models/Costum90259Yolov8n.pt")
 
 def init_zed():
     # Initialize the ZED camera with specific parameters
