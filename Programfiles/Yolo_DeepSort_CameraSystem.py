@@ -17,13 +17,13 @@ selected_object = 'q'
 fixed_camera = False
 
 ## Serial configuration
-PORT = 'COM4'#'/dev/ttyUSB0'  # <-- Use known USB port
+PORT = '/dev/ttyUSB0'  # <-- Use known USB port
 BAUDRATE = 115200
 TIMEOUT = 1
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.pt")
+MODEL_PATH = os.path.join(script_dir, "../Models/yolov8s.engine")
 
 
 def init_zed():
