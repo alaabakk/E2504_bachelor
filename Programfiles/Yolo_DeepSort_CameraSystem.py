@@ -51,11 +51,11 @@ def init_serial():
         print(f"Error opening serial port {PORT}: {e}")
         return None
 
-def serial_print(ser, middle):
+def serial_print(ser, x1, y1, x2, y2):
     if not ser:
         return
-    message1 = middle[0]
-    message2 = middle[1]
+    message1 = int(x1 + (x2 - x1) / 2) 
+    message2 = int(y1 + (y2 - y1) / 2) - ((y2 - y1)/4)
     message = f"{message1} , {message2}\n"
     print(message)
     ser.write(message.encode())
@@ -152,7 +152,7 @@ def process_yolo_results(detections, tracking_ids, boxes, img_cv, ser, depth_map
 
         if selected_object == str(tracking_id):
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 0, 255), tracking_id, type, confidence, distance)
-            serial_print(ser, middle)
+            serial_print(ser, x1, y1, x2, y2)
         else:
             draw_bounding_box(img_cv, x1, y1, x2, y2, (0, 255, 0), tracking_id, type, confidence, distance)
 
