@@ -78,4 +78,4 @@ def save_video_from_zed(output_file="output_video.mp4", fps=30):
     print(f"Video saved to {output_file}")
 
 if __name__ == "__main__":
-    save_video_from_zed(output_file="MP4_Videos/zed_output8.mp4", fps=30)
+    save_video_from_zed(output_file="MP4_Videos/CrossPathTest.mp4", fps=30)
