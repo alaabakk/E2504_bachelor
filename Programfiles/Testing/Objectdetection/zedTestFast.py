@@ -152,7 +152,7 @@ def calculateDistance(middle, depth_map):
 
 def save_data_to_excel():
     # Save data to Excel
-    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast.xlsx")
+    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast_1.xlsx")
     results_path = os.path.normpath(results_path)
 
     df = pd.DataFrame({
