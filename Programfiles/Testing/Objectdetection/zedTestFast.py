@@ -21,7 +21,7 @@ confidence_list = []
 
 bounding_box_list = []
 
-image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames_fast_track_1")
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames_fast_track_2")
 image_save_path = os.path.normpath(image_save_path)
 os.makedirs(image_save_path, exist_ok=True)
 
@@ -152,7 +152,7 @@ def calculateDistance(middle, depth_map):
 
 def save_data_to_excel():
     # Save data to Excel
-    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast_track_1.xlsx")
+    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast_track_2.xlsx")
     results_path = os.path.normpath(results_path)
 
     df = pd.DataFrame({
