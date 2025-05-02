@@ -21,7 +21,7 @@ confidence_list = []
 
 bounding_box_list = []
 
-image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames_fast_1")
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames_fast_2")
 image_save_path = os.path.normpath(image_save_path)
 os.makedirs(image_save_path, exist_ok=True)
 
@@ -152,7 +152,7 @@ def calculateDistance(middle, depth_map):
 
 def save_data_to_excel():
     # Save data to Excel
-    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast_1.xlsx")
+    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast_2.xlsx")
     results_path = os.path.normpath(results_path)
 
     df = pd.DataFrame({
@@ -212,7 +212,7 @@ def process_objects(objects, img_cv, depth_map):
                 else:
                     # Draw green bounding box and label
                     cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
-                    label = f"{conf_index} ({int(obj.confidence)}%) dist: {distance:.2f}m"
+                    label = f"{conf_index} ({int(obj.confidence)}%)"
                     cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
                     # Draw a dot with a diameter of 3 pixels at the center of the object
                     cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
