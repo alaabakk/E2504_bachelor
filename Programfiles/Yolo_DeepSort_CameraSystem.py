@@ -54,9 +54,10 @@ def init_serial():
 def serial_print(ser, x1, y1, x2, y2):
     if not ser:
         return
-    message1 = 640 - (x1 + x2) / 2
-    message2 = 360 - (y1 + y2) / 2
+    message1 = int(x1 + (x2 - x1) / 2) 
+    message2 = int(y1 + (y2 - y1) / 2) - ((y2 - y1)/4)
     message = f"{message1} , {message2}\n"
+    print(message)
     ser.write(message.encode())
 
 def startup_message():
@@ -123,8 +124,11 @@ def my_callback(inp):
 
 def calculateDistance(middle, depth_map):
     # Get the depth value at the center of the object
-    depth_value = depth_map.get_value(middle[0], middle[1])
-    distance = depth_value[1]
+    if middle[0] <= 0 and middle[0] >= 1280 and middle[1] <= 0 and middle[1] >= 720:
+        depth_value = depth_map.get_value(middle[0], middle[1])
+        distance = depth_value[1]
+    else:
+        distance = 0.0
 
     return distance
 
@@ -201,7 +205,7 @@ def main():
         print("Serial port not available. Exiting.")
         return
     
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.70)
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.40)
     tracker = Tracker()
     kthread = KeyboardThread(my_callback)
     fps_counter = FPSCounter()

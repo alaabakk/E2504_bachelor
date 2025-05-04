@@ -19,7 +19,11 @@ class_instance_count = 0
 class_instance_list = []
 confidence_list = []
 
+bounding_box_list = []
 
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "saved_frames_fast_3")
+image_save_path = os.path.normpath(image_save_path)
+os.makedirs(image_save_path, exist_ok=True)
 
 
 def init_zed():
@@ -63,7 +67,7 @@ def init_object_detection(zed):
         exit()
 
     obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
-    obj_runtime_param.detection_confidence_threshold = 70
+    obj_runtime_param.detection_confidence_threshold = 60
 
     return obj_param, obj_runtime_param
 
@@ -94,25 +98,48 @@ def init():
     print("Object detection initialized")
     kthread = KeyboardThread(input_cbk=my_callback)
     print("Keyboard thread initialized")
+    fps_counter = FPSCounter()
+    fps = 0
 
-    return zed, obj_runtime_param
+    return zed, obj_runtime_param, fps_counter, fps
 
 
-def calculateFPS():
-    # Calculate the FPS based on the time taken to process each frame
-    global start_time, frame_count
-    current_time = time.time()
-    elapsed_time = current_time - start_time
+class FPSCounter:
+    def __init__(self):
+        self.start_time = time.perf_counter()
+        self.frame_count = 0
 
-    if elapsed_time > 1:
-        fps = frame_count / elapsed_time
-        fps = int(fps)
-        frame_count = 0
-        start_time = current_time
-        return fps, True
+    def calculateFPS(self):
+        current_time = time.perf_counter()
+        elapsed_time = current_time - self.start_time
 
-    frame_count += 1
-    return 0, False
+        self.frame_count += 1
+
+        if elapsed_time > 1.0:
+            fps = int(self.frame_count / elapsed_time)
+            self.start_time = current_time
+            self.frame_count = 0
+            return fps, True
+        
+        return 0, False
+    
+    def draw_fps(self, img, fps):
+        # Set styles
+        text = f"FPS: {fps}"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 0.6
+        thickness = 2
+        text_color = (255, 255, 255)
+        bg_color = (30, 30, 30)  # Dark grey
+        padding = 10
+
+        # Get text size
+        (w, h), _ = cv2.getTextSize(text, font, scale, thickness)
+        x, y = 10, 30  # Top-left corner
+
+        # Draw rounded rectangle (you can swap to plain if preferred)
+        cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
+        cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
 
 def calculateDistance(middle, depth_map):
@@ -125,7 +152,7 @@ def calculateDistance(middle, depth_map):
 
 def save_data_to_excel():
     # Save data to Excel
-    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast.xlsx")
+    results_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Objectdetection", "zed_fast_3.xlsx")
     results_path = os.path.normpath(results_path)
 
     df = pd.DataFrame({
@@ -135,7 +162,11 @@ def save_data_to_excel():
     })
     conf_df = pd.DataFrame(confidence_list)
     conf_df.columns = [f"Confidence_{i+1}" for i in range(conf_df.shape[1])]
-    df = pd.concat([df, conf_df], axis=1)
+
+    bbox_df = pd.DataFrame(bounding_box_list)
+    bbox_df.columns = [f"BBox_{i+1}" for i in range(bbox_df.shape[1])]
+
+    df = pd.concat([df, conf_df, bbox_df], axis=1)
     df.to_excel(results_path, index=False)
 
 
@@ -145,6 +176,7 @@ def process_objects(objects, img_cv, depth_map):
     class_instance_count = 0
 
     inference_conf = []
+    inference_bounding_box = []
 
     conf_index = 0
 
@@ -159,6 +191,7 @@ def process_objects(objects, img_cv, depth_map):
                 conf_index += 1
 
                 inference_conf.append(round(obj.confidence, 2))
+                inference_bounding_box.append(obj.bounding_box_2d)
 
                 topleft = obj.bounding_box_2d[0]
                 bottomright = obj.bounding_box_2d[2]
@@ -179,15 +212,16 @@ def process_objects(objects, img_cv, depth_map):
                 else:
                     # Draw green bounding box and label
                     cv2.rectangle(img_cv, (int(topleft[0]), int(topleft[1])), (int(bottomright[0]), int(bottomright[1])), (0, 255, 0), 2)
-                    label = f"{conf_index} ({int(obj.confidence)}%) dist: {distance:.2f}m"
+                    label = f"{conf_index} ({int(obj.confidence)}%)"
                     cv2.putText(img_cv, label, (int(topleft[0]), int(topleft[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
                     # Draw a dot with a diameter of 3 pixels at the center of the object
                     cv2.circle(img_cv, (middle[0], middle[1]), 3, (255, 0, 0), -1)
     
     confidence_list.append(tuple(inference_conf))
+    bounding_box_list.append(tuple(inference_bounding_box))
 
 
-def main_loop(zed, obj_runtime_param):
+def main_loop(zed, obj_runtime_param, fps_counter, fps):
     objects = sl.Objects()
     
     
@@ -206,12 +240,10 @@ def main_loop(zed, obj_runtime_param):
             process_objects(objects, img_cv, depth_map)
 
             # Calculate FPS
-            fps_new, state = calculateFPS()
-            if state:
+            fps_new, updated = fps_counter.calculateFPS()
+            if updated:
                 fps = fps_new
-
-            cv2.rectangle(img_cv, (0, 0), (100, 50), (0, 0, 0), -1)
-            cv2.putText(img_cv, str(fps), (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            fps_counter.draw_fps(img_cv, fps)
 
 
             cv2.imshow("Object detection with ZED", img_cv)
@@ -221,6 +253,12 @@ def main_loop(zed, obj_runtime_param):
             frames_list.append(len(frames_list))
             fps_list.append(fps)
             class_instance_list.append(class_instance_count)
+
+            if frames_list:
+                frame_id = frames_list[-1]
+                image_filename = f"frame_{frame_id:05d}.jpg"
+                image_path = os.path.join(image_save_path, image_filename)
+                cv2.imwrite(image_path, img_cv)
 
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -234,8 +272,8 @@ def main_loop(zed, obj_runtime_param):
 
 
 def main():
-    zed, obj_runtime_param = init()
-    main_loop(zed, obj_runtime_param)
+    zed, obj_runtime_param, fps_counter, fps = init()
+    main_loop(zed, obj_runtime_param, fps_counter, fps)
 
 
 if __name__ == "__main__":

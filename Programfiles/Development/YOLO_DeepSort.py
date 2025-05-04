@@ -65,6 +65,7 @@ def main():
                 for tracking_id, bounding_box, detection in zip(tracking_ids, boxes, detections):
                     print(detection[0])
 
+                    x1, y1, x2, y2 = int(bounding_box[0]), int(bounding_box[1]), int(bounding_box[2]), int(bounding_box[3])
                     
 
                     cv2.rectangle(frame, (int(bounding_box[0]), int(bounding_box[1])), 
@@ -72,6 +73,7 @@ def main():
                     cv2.putText(frame, f"{str(tracking_id)}", 
                                 (int(bounding_box[0]), int(bounding_box[1] - 10)), 
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                    cv2.circle(frame, (int(x1 + (x2 - x1) / 2), int((y1 + (y2 - y1) / 2) - ((y2 - y1)/4))), 5, (0, 255, 0), -1)
                 
 
                 

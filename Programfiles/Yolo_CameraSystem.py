@@ -42,7 +42,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "../Models/yolov8s.pt")
+    model_path = os.path.join(script_dir, "../Models/yolov8s.engine")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -60,8 +60,8 @@ def init_serial():
 def serial_print(ser, x1, y1, x2, y2):
     if not ser:
         return
-    message1 = 640 - (x1 + x2) / 2
-    message2 = 360 - (y1 + y2) / 2
+    message1 = int(x1 + (x2 - x1) / 2) 
+    message2 = int(y1 + (y2 - y1) / 2) - ((y2 - y1)/4)
     message = f"{message1} , {message2}\n"
     ser.write(message.encode())
 
@@ -138,8 +138,7 @@ def process_yolo_results(results, img_cv, ser, depth_map):
 
     # Define the classes to keep
     names = {
-        0: 'person',
-        1: 'car',
+        0: 'person'
     }
 
     # Process YOLO results and draw bounding boxes on the image

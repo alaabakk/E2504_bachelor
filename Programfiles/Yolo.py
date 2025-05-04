@@ -167,7 +167,7 @@ def main_loop(zed, model, fps_counter, fps):
             zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
 
             # Predict using YOLO
-            results = model.track(img_cv, stream=True, augment=True, verbose=False, device=0, conf=0.7, tracker="botsort.yaml")
+            results = model.track(img_cv, stream=True, augment=True, verbose=False, conf=0.7)
 
             # Process results and draw on the frame
             process_yolo_results(results, img_cv, depth_map)

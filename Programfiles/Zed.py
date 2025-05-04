@@ -193,7 +193,7 @@ def main_loop(zed, obj_runtime_param, fps_counter, fps):
             fps_new, updated = fps_counter.calculateFPS()
             if updated:
                 fps = fps_new
-            fps_counter.draw_fps(img_cv, 10)
+            fps_counter.draw_fps(img_cv, fps)
 
 
             cv2.imshow("Object detection with ZED", img_cv)
