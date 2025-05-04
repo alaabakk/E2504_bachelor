@@ -1,8 +1,11 @@
 from ultralytics import YOLO
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(script_dir, "../../../Models/yolov8n.engine")
 # Load your model (change path if needed)
-model = YOLO("yolov8n.pt")  # or 'path/to/your/model.pt'
+model = YOLO(model_path)  # or 'path/to/your/model.pt'
 
+data_path = os.path.join(script_dir, "")
 # Evaluate the model on your dataset
 metrics = model.val(data=r'C:\Users\Pette\OneDrive\Dokumenter\Skole\Bachelor\Code\Distance.v1i.yolov8\data.yaml', imgsz=640, batch=16, split="test", half=True, classes = [0],)
 
