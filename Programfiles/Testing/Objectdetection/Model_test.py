@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(script_dir, '../../../Models/custom9044yolov8n.pt')
+model_path = os.path.join(script_dir, '../../../Models/yolov8s.pt')
 # Load your model (change path if needed)
 model = YOLO(model_path)  # or 'path/to/your/model.pt'
 
