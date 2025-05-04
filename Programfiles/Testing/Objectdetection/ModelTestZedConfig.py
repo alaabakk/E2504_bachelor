@@ -7,7 +7,7 @@ model_path = os.path.join(script_dir, '../../../Models/Yolov8n.pt')
 model = YOLO(model_path)  # or 'path/to/your/model.pt'
 
 # Add path to dataset.yaml
-data_path = os.path.join(script_dir, 'Testset/Combined/data.yaml')
+data_path = os.path.join(script_dir, 'Testset/AllCombined/data.yaml')
 # Evaluate the model on your dataset
 metrics = model.val(data=data_path, imgsz=640, batch=16, split="test", half=True, conf = 0.6, iou=0.6, classes = [0],)
 
