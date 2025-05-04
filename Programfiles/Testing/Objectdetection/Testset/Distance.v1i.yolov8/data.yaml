@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['person']
+
+roboflow:
+  workspace: e2504
+  project: distance-u9tn5
+  version: 1
+  license: Private
+  url: https://app.roboflow.com/e2504/distance-u9tn5/1
