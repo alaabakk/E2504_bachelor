@@ -4,10 +4,10 @@
 #   cd /path/to/script
 #
 # Then, make the script executable: (Only needed for first use)
-#   chmod +x StartZedContainer.sh
+#   chmod +x RunContainer.sh
 #
 # Finally, run it:
-#   ./StartZedContainer.sh
+#   ./RunContainer.sh
 #
 # -----------------------------------------------------------------------------
 # Add connection to the X server to enable display inside the Docker container.
