@@ -3,7 +3,7 @@
 # First, make sure you are in the same directory as this script. For example:
 #   cd /path/to/script
 #
-# Then, make the script executable:
+# Then, make the script executable: (Only needed for first use)
 #   chmod +x StartZedContainer.sh
 #
 # Finally, run it:
