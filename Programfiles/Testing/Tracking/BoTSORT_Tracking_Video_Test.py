@@ -5,7 +5,7 @@ import os
 import threading
 import time
 
-image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Tracking", "saved_frames_botsort_1")
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Tracking", "saved_frames_botsort_occlusion_1")
 image_save_path = os.path.normpath(image_save_path)
 os.makedirs(image_save_path, exist_ok=True)
 
@@ -27,7 +27,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "../../../Models/yolov8n.pt")
+    model_path = os.path.join(script_dir, "../../../Models/customYolov8n.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -143,7 +143,7 @@ def main_loop_video(cap, model):
     cv2.destroyAllWindows()
 
 def main():
-    video_path = "../Test_Videos/Tracking_Cross.mp4"
+    video_path = "../Test_Videos/Tracking_occlution.mp4"
     # Initialize webcam
     cap = init_video(video_path)
 
