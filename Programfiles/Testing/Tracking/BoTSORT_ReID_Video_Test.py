@@ -8,11 +8,11 @@ import time
 ## Global variables
 selected_object = 'q'
 
-def init_webcam():
+def init_video(video_path):
     # Open the default webcam (device 0)
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
-        print("Error: Could not open webcam.")
+        print(f"Error: Could not open file {video_path}")
         exit()
     return cap
 
@@ -21,7 +21,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "../../Models/yolov8n.pt")
+    model_path = os.path.join(script_dir, "../../../Models/yolov8n.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -127,7 +127,7 @@ def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confiden
     label_text = f"{tracking_id} {type} ({confidence:.2f})"
     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-def main_loop_webcam(cap, model, fps_counter, fps):
+def main_loop_video(cap, model, fps_counter, fps):
     # Define fixed width and height
     fixed_width = 1280
     fixed_height = 720
@@ -135,7 +135,7 @@ def main_loop_webcam(cap, model, fps_counter, fps):
     while True:
         ret, img_cv = cap.read()
         if not ret:
-            print("Error: Could not read frame from webcam.")
+            print("Error: Could not read frame from video.")
             break
 
         try:
@@ -160,7 +160,7 @@ def main_loop_webcam(cap, model, fps_counter, fps):
 
         # Resize the frame to fixed dimensions
         resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
-        cv2.imshow("YOLO Object Detection with Webcam", resized_frame)
+        cv2.imshow("YOLO Tracking of video", resized_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -169,8 +169,9 @@ def main_loop_webcam(cap, model, fps_counter, fps):
     cv2.destroyAllWindows()
 
 def main():
+    video_path = "../Test_Videos/Tracking_Cross.mp4"
     # Initialize webcam
-    cap = init_webcam()
+    cap = init_video(video_path)
 
     # Initialize YOLO model
     model = init_yolo()
@@ -185,7 +186,7 @@ def main():
     startup_message()
 
     # Start the main loop for webcam
-    main_loop_webcam(cap, model, fps_counter, fps)
+    main_loop_video(cap, model, fps_counter, fps)
 
 if __name__ == "__main__":
     main()
