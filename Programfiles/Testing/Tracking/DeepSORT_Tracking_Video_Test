@@ -1,15 +1,22 @@
 import cv2
 import time
+import os
 from DetectorDeepSort import YoloDetector
 from TrackerDeepSort import Tracker
 
 MODEL_PATH = "../../../Models/yolov8s.pt"
 VIDEO_PATH = "../Test_Videos/Tracking_Cross.mp4"
 
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Tracking", "saved_frames_deepsort_1")
+image_save_path = os.path.normpath(image_save_path)
+os.makedirs(image_save_path, exist_ok=True)
+
+frame_count = 0
 
 def main():
   detector = YoloDetector(model_path=MODEL_PATH, confidence=0.2)
   tracker = Tracker()
+  global frame_count
 
   cap = cv2.VideoCapture(VIDEO_PATH)
 
@@ -37,6 +44,14 @@ def main():
     print(f"Current fps: {fps}")
 
     cv2.imshow("Frame", frame)
+
+
+    frame_id = frame_count
+    image_filename = f"frame_{frame_id:05d}.jpg"
+    image_path = os.path.join(image_save_path, image_filename)
+    cv2.imwrite(image_path, frame)
+    cap.grab()
+    frame_count += 1
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q") or key == 27:

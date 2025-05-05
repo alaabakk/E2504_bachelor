@@ -5,8 +5,14 @@ import os
 import threading
 import time
 
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Tracking", "saved_frames_botsort_1")
+image_save_path = os.path.normpath(image_save_path)
+os.makedirs(image_save_path, exist_ok=True)
+
 ## Global variables
 selected_object = 'q'
+
+frame_count = 0
 
 def init_video(video_path):
     # Open the default webcam (device 0)
@@ -31,42 +37,6 @@ def startup_message():
     print("Program started. Press 'q' in the window to stop.")
     print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
 
-class FPSCounter:
-    def __init__(self):
-        self.start_time = time.perf_counter()
-        self.frame_count = 0
-
-    def calculateFPS(self):
-        current_time = time.perf_counter()
-        elapsed_time = current_time - self.start_time
-
-        self.frame_count += 1
-
-        if elapsed_time > 1.0:
-            fps = int(self.frame_count / elapsed_time)
-            self.start_time = current_time
-            self.frame_count = 0
-            return fps, True
-        
-        return 0, False
-    
-    def draw_fps(self, img, fps):
-        # Set styles
-        text = f"FPS: {fps}"
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        scale = 0.6
-        thickness = 2
-        text_color = (255, 255, 255)
-        bg_color = (30, 30, 30)  # Dark grey
-        padding = 10
-
-        # Get text size
-        (w, h), _ = cv2.getTextSize(text, font, scale, thickness)
-        x, y = 10, 30  # Top-left corner
-
-        # Draw rectangle and overlay FPS text
-        cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
-        cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
 class KeyboardThread(threading.Thread):
     def __init__(self, input_cbk=None, name='keyboard-input-thread'):
@@ -127,10 +97,12 @@ def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confiden
     label_text = f"{tracking_id} {type} ({confidence:.2f})"
     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-def main_loop_video(cap, model, fps_counter, fps):
+def main_loop_video(cap, model):
     # Define fixed width and height
     fixed_width = 1280
     fixed_height = 720
+
+    global frame_count
 
     while True:
         ret, img_cv = cap.read()
@@ -152,18 +124,20 @@ def main_loop_video(cap, model, fps_counter, fps):
             print(f"IndexError encountered: {e}. Skipping this frame.")
             continue
 
-        # Calculate and draw FPS
-        fps_new, updated = fps_counter.calculateFPS()
-        if updated:
-            fps = fps_new
-        fps_counter.draw_fps(img_cv, fps)
-
         # Resize the frame to fixed dimensions
         resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
         cv2.imshow("YOLO Tracking of video", resized_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        
+        frame_id = frame_count
+        image_filename = f"frame_{frame_id:05d}.jpg"
+        image_path = os.path.join(image_save_path, image_filename)
+        cv2.imwrite(image_path, img_cv)
+        cap.grab()
+        frame_count += 1
 
     cap.release()
     cv2.destroyAllWindows()
@@ -179,14 +153,10 @@ def main():
     # Start the keyboard input thread
     kthread = KeyboardThread(my_callback)
 
-    # Initialize FPS counter
-    fps_counter = FPSCounter()
-    fps = 0
-
     startup_message()
 
     # Start the main loop for webcam
-    main_loop_video(cap, model, fps_counter, fps)
+    main_loop_video(cap, model)
 
 if __name__ == "__main__":
     main()
