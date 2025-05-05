@@ -8,7 +8,6 @@ import time
 ## Global variables
 selected_object = 'q'
 
-
 def init_webcam():
     # Open the default webcam (device 0)
     cap = cv2.VideoCapture(0)
@@ -22,7 +21,7 @@ def init_yolo():
     print("Initializing YOLO model...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the path to the model file
-    model_path = os.path.join(script_dir, "../../Models/yolov8s.pt")
+    model_path = os.path.join(script_dir, "../../Models/yolov8n.pt")
     model = YOLO(model_path, task="detect")
     print("YOLO model initialized")
     return model
@@ -31,7 +30,6 @@ def startup_message():
     print("\nYOLO Object Detection with Webcam")
     print("Program started. Press 'q' in the window to stop.")
     print("Enter the ID of the object you want to track. Enter 'q' to stop tracking.")
-
 
 class FPSCounter:
     def __init__(self):
@@ -66,26 +64,26 @@ class FPSCounter:
         (w, h), _ = cv2.getTextSize(text, font, scale, thickness)
         x, y = 10, 30  # Top-left corner
 
-        # Draw rounded rectangle (you can swap to plain if preferred)
+        # Draw rectangle and overlay FPS text
         cv2.rectangle(img, (x - padding, y - h - padding), (x + w + padding, y + padding), bg_color, -1)
         cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
 class KeyboardThread(threading.Thread):
-
-    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
+    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
         self.input_cbk = input_cbk
         super(KeyboardThread, self).__init__(name=name, daemon=True)
         self.start()
 
     def run(self):
         while True:
-            self.input_cbk(input()) #waits to get input + Return
+            self.input_cbk(input())  # Waits to get input + Return
 
 def my_callback(inp):
-    #evaluate the keyboard input
+    # Evaluate the keyboard input
     print('You selected object:', inp)
     global selected_object
     selected_object = inp
+
 
 def process_yolo_results(results, img_cv):
     global selected_object
@@ -93,23 +91,28 @@ def process_yolo_results(results, img_cv):
     # Define the classes to keep
     names = {
         0: 'person',
-        1: 'car',
     }
 
-    # Check if results are empty or malformed
-    if not results or len(results) == 0:
+    # Convert the generator to a list
+    results_list = list(results)
+    if not results_list:
         print("No objects detected in the frame.")
-        return  # Skip processing if no results
+        return
 
     # Process YOLO results and draw bounding boxes on the image
-    for r in results:
+    for r in results_list:
         for box in r.boxes:
             label_id = int(box.cls[0])  # Class ID
             if label_id in names:  # Filter by desired classes
                 x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
                 confidence = box.conf[0]  # Confidence score
                 type = names[label_id]  # Get class label from the dictionary
-                ID = int(box.id[0])  # Get the unique ID of the object
+                
+                # Check if the box has an ID
+                if box.id is not None:
+                    ID = int(box.id[0])  # Get the unique ID of the object
+                else:
+                    ID = -1  # Assign a default ID if none is available
 
                 if selected_object == str(ID):
                     # Draw bounding box with red color for selected object
@@ -124,7 +127,6 @@ def draw_bounding_box(img_cv, x1, y1, x2, y2, color, tracking_id, type, confiden
     label_text = f"{tracking_id} {type} ({confidence:.2f})"
     cv2.putText(img_cv, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-
 def main_loop_webcam(cap, model, fps_counter, fps):
     # Define fixed width and height
     fixed_width = 1280
@@ -136,11 +138,19 @@ def main_loop_webcam(cap, model, fps_counter, fps):
             print("Error: Could not read frame from webcam.")
             break
 
-        # Predict using YOLO
-        results = model.track(img_cv, stream=True, device="cpu", conf=0.7, tracker="custom_botsort.yaml", persist=True, show=True)
+        try:
+            # Predict using YOLO
+            results = model.track(img_cv, stream=True, conf=0.5, tracker="custom_botsort.yaml", persist=True)
 
-        # Process results and draw on the frame
-        process_yolo_results(results, img_cv)  # No depth map for webcam
+            # Process results and draw on the frame
+            if results is not None:
+                process_yolo_results(results, img_cv)
+            else:
+                print("No results from YOLO model.")
+
+        except IndexError as e:
+            print(f"IndexError encountered: {e}. Skipping this frame.")
+            continue
 
         # Calculate and draw FPS
         fps_new, updated = fps_counter.calculateFPS()
@@ -157,7 +167,6 @@ def main_loop_webcam(cap, model, fps_counter, fps):
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 def main():
     # Initialize webcam
@@ -177,7 +186,6 @@ def main():
 
     # Start the main loop for webcam
     main_loop_webcam(cap, model, fps_counter, fps)
-
 
 if __name__ == "__main__":
     main()
