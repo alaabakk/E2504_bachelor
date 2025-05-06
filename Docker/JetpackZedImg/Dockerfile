@@ -29,4 +29,4 @@ RUN python3 -m pip install \
         openpyxl && \
     git clone https://github.com/alaabakk/E2504_bachelor.git
 
-WORKDIR /usr/local/zed/E2504_bachelor
+WORKDIR /usr/local/zed/E2504_bachelor/Programfiles
