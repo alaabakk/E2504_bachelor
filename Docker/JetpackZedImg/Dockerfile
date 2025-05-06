@@ -27,6 +27,9 @@ RUN python3 -m pip install \
         pyserial \
         deep-sort-realtime \
         openpyxl && \
-    git clone https://github.com/alaabakk/E2504_bachelor.git
+    
+WORKDIR /usr/local/zed
 
-WORKDIR /usr/local/zed/E2504_bachelor/Programfiles
+RUN git clone https://github.com/alaabakk/E2504_bachelor.git
+
+WORKDIR /usr/local/zed/E2504_bachelor
