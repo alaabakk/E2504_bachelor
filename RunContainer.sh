@@ -26,7 +26,7 @@ docker run --gpus all -it --privileged \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /usr/local/zed/resources:/usr/local/zed/resources \
-    l4t-zed-demo:36.4_4.2
+    demo-test
 
 # -----------------------------------------------------------------------------
 # Tips for container lifecycle management:
