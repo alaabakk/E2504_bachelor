@@ -119,11 +119,15 @@ class KeyboardThread(threading.Thread):
         while True:
             self.input_cbk(input()) #waits to get input + Return
 
-def my_callback(inp):
+def my_callback(inp, ser):
     #evaluate the keyboard input
     print('You selected object:', inp)
     global selected_object
     selected_object = inp
+    if inp == 'q':
+        ser.write(inp.encode())
+
+    
 
 def calculateDistance(middle, depth_map):
     # Get the depth value at the center of the object
