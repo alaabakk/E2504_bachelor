@@ -155,7 +155,8 @@ def process_yolo_results(results, img_cv, ser, depth_map):
                 x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
                 confidence = box.conf[0]  # Confidence score
                 type = names[label_id]  # Get class label from the dictionary
-                ID = int(box.id[0])  # Get the unique ID of the object
+                #ID = int(box.id[0])  # Get the unique ID of the object
+                ID = int(box.id[0]) if box.id is not None else -1  # Use -1 as a fallback ID
 
                 # Avstand til midten av objektet
                 middle = (int(x1 + (x2 - x1) / 2), int(y1 + (y2 - y1) / 2))
