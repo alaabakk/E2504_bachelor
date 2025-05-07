@@ -94,8 +94,8 @@ def init_serial():
 def serial_print(ser, x1, y1, x2, y2):
     if not ser:
         return
-    message1 = 640 - (x1 + x2) / 2
-    message2 = 360 - (y1 + y2) / 2
+    message1 = int(x1 + (x2 - x1) / 2)
+    message2 = int(y1 + (y2 - y1) / 2)
     message = f"{message1} , {message2}\n"
     ser.write(message.encode())
 
@@ -173,8 +173,7 @@ def process_objects(objects, img_cv, depth_map, ser):
     
     # Define the classes to keep
     names = [
-        'PERSON',
-        'CAR',
+        'PERSON'
     ]
 
     if objects.is_new:
