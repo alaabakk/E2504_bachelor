@@ -109,15 +109,17 @@ class FPSCounter:
         cv2.putText(img, text, (x, y), font, scale, text_color, thickness)
 
 class KeyboardThread(threading.Thread):
-
-    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
+    def __init__(self, input_cbk=None, ser=None, name='keyboard-input-thread'):
         self.input_cbk = input_cbk
+        self.ser = ser  # Pass the serial object
         super(KeyboardThread, self).__init__(name=name, daemon=True)
         self.start()
 
     def run(self):
         while True:
-            self.input_cbk(input()) #waits to get input + Return
+            user_input = input()  # Waits to get input + Return
+            if self.input_cbk:
+                self.input_cbk(user_input, self.ser)  # Pass user input and serial object to the callback
 
 def my_callback(inp, ser):
     #evaluate the keyboard input
@@ -233,7 +235,7 @@ def main():
         return
 
     # Start the keyboard input thread
-    kthread = KeyboardThread(my_callback)
+    kthread = KeyboardThread(my_callback, ser)
 
     # Initialize FPS counter
     fps_counter = FPSCounter()
