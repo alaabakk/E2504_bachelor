@@ -112,7 +112,7 @@ def main_loop_video(cap, model):
 
         try:
             # Predict using YOLO
-            results = model.track(img_cv, stream=True, conf=0.5, tracker="custom_botsort.yaml", persist=True)
+            results = model.track(img_cv, stream=True, conf=0.6, tracker="custom_botsort.yaml", persist=True)
 
             # Process results and draw on the frame
             if results is not None:
