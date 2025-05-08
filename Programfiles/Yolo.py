@@ -114,7 +114,6 @@ def process_yolo_results(results, img_cv, depth_map):
     # Define the classes to keep
     names = {
         0: 'person',
-        1: 'car',
     }
 
     # Process YOLO results and draw bounding boxes on the image
@@ -127,7 +126,7 @@ def process_yolo_results(results, img_cv, depth_map):
                 type = names[label_id]  # Get class label from the dictionary
                 ID = int(box.id[0])  # Get the unique ID of the object
 
-                # Avstand til midten av objektet
+                # Distance to the middle of the bounding box
                 middle = (int(x1 + (x2 - x1) / 2), int(y1 + (y2 - y1) / 2))
                 distance = calculateDistance(middle, depth_map)
 
@@ -162,12 +161,12 @@ def main_loop(zed, model, fps_counter, fps):
             # Convert RGBA to RGB
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
-            #distanse
+            #Calculate distance
             depth_map = sl.Mat()
             zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
 
             # Predict using YOLO
-            results = model.track(img_cv, stream=True, augment=True, verbose=False, conf=0.7)
+            results = model.track(img_cv, stream=True, augment=True, verbose=False, conf=0.7, tracker="custom_botsort.yaml")
 
             # Process results and draw on the frame
             process_yolo_results(results, img_cv, depth_map)

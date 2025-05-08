@@ -1,5 +1,4 @@
 # Import necessary libraries
-from ultralytics import YOLO  # YOLO object detection library
 import pyzed.sl as sl  # ZED camera library
 import numpy as np  # For numerical operations
 import cv2  # OpenCV for image processing
@@ -169,7 +168,7 @@ def main_loop(zed, detector, tracker, fps_counter, fps):
 
             # Resize and display the frame
             resized_frame = cv2.resize(img_cv, (fixed_width, fixed_height))
-            cv2.imshow("YOLO Object Detection with ZED", resized_frame)
+            cv2.imshow("YOLO DeepSORT tracking with ZED", resized_frame)
 
             # Exit the loop if 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):

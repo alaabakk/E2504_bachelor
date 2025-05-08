@@ -8,11 +8,9 @@ class Tracker:
         n_init=3,  # Minimum number of detections required to confirm a track
         nms_max_overlap=0.3,  # Non-maximum suppression threshold for overlapping boxes
         max_cosine_distance=0.8,  # Maximum cosine distance for re-identification
-        nn_budget=None,  # Budget for the nearest neighbor search
         embedder="mobilenet",  # Embedder model used for feature extraction
         half=True,  # Use half-precision for faster computation
         bgr=True,  # Specify that input frames are in BGR format
-        embedder_model_name=None,  # Custom embedder model name (if any)
     )
 
   def track(self, detections, frame):
