@@ -5,9 +5,9 @@ from DetectorDeepSort import YoloDetector
 from TrackerDeepSort import Tracker
 
 MODEL_PATH = "../../../Models/customYolov8n.pt"
-VIDEO_PATH = "../Test_Videos/CrossPathTest.mp4"
+VIDEO_PATH = "../Test_Videos/Tracking_occlution.mp4"
 
-image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Tracking", "saved_frames_deepsort_crosspath_torchreid_1")
+image_save_path = os.path.join(os.path.dirname(__file__), "..", "Results", "Tracking", "saved_frames_deepsort_occlusion_torchreid_1")
 image_save_path = os.path.normpath(image_save_path)
 os.makedirs(image_save_path, exist_ok=True)
 

@@ -5,9 +5,9 @@ class Tracker:
     # Initialize the DeepSort object tracker with specific parameters
     self.object_tracker = DeepSort(
         max_age=30,  # Maximum number of frames to keep a track alive without detections
-        n_init=5,  # Minimum number of detections required to confirm a track
-        nms_max_overlap=0.3,  # Non-maximum suppression threshold for overlapping boxes
-        max_cosine_distance=0.7,  # Maximum cosine distance for re-identification
+        n_init=3,  # Minimum number of detections required to confirm a track
+        nms_max_overlap=0.6,  # Non-maximum suppression threshold for overlapping boxes
+        max_cosine_distance=0.4,  # Maximum cosine distance for re-identification
         nn_budget=None,  # Budget for the nearest neighbor search
         embedder="torchreid",  # Embedder model used for feature extraction
         half=True,  # Use half-precision for faster computation
