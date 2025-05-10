@@ -2,14 +2,14 @@ from ultralytics import YOLO
 import os
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(script_dir, '../../../Models/customYolo8n.pt')
+model_path = os.path.join(script_dir, '../../../Models/customYolov8n.pt')
 # Load your model (change path if needed)
 model = YOLO(model_path)  # or 'path/to/your/model.pt'
 
 # Add path to dataset.yaml
 data_path = os.path.join(script_dir, 'Testset/Training/data.yaml')
 # Evaluate the model on your dataset
-metrics = model.val(data=data_path, imgsz=640, batch=16, split="test", half=True, classes = [0],)
+metrics = model.val(data=data_path, imgsz=640, batch=16, split="test", classes = [0],)
 
 #print metrics
 precision_class0 = metrics.box.p[0]
