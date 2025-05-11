@@ -205,7 +205,7 @@ def main():
         print("Serial port not available. Exiting.")
         return
     
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.40)
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.6)
     tracker = Tracker()
     kthread = KeyboardThread(my_callback)
     fps_counter = FPSCounter()

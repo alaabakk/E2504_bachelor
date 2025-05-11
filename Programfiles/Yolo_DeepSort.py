@@ -181,7 +181,7 @@ def main_loop(zed, detector, tracker, fps_counter, fps):
 def main():
     # Main function to initialize components and start the program
     zed = init_zed()  # Initialize the ZED camera
-    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.70)  # Initialize YOLO detector
+    detector = YoloDetector(model_path=MODEL_PATH, confidence=0.60)  # Initialize YOLO detector
     tracker = Tracker()  # Initialize the tracker
     kthread = KeyboardThread(my_callback)  # Start the keyboard input thread
     fps_counter = FPSCounter()  # Initialize the FPS counter
