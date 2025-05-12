@@ -11,7 +11,7 @@ match_thresh: 0.8 # threshold for matching tracks 0.8
 fuse_score: True # Whether to fuse confidence scores with the iou distances before matching
 # min_box_area: 10  # threshold for min box areas(for tracker evaluation, not used for now)
 
-# BoT-SORT settings
+# BoT-SORT settings if ReID is implemented in the future
 gmc_method: sparseOptFlow # method of global motion compensation
 # ReID model related thresh
 proximity_thresh: 0.5 # minimum IoU for valid match with ReID
