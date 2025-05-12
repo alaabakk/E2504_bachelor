@@ -1,0 +1,158 @@
+#include <Arduino.h>
+#include <ESP32Servo.h>
+ 
+// Pinner
+const int servoPanPin = 18;
+
+#define ENC_PAN_A 32
+#define ENC_PAN_B 33
+
+#define PPR 4096
+ 
+// Servo og regulator
+float maxSpeed = 50.0;
+
+Servo servoPan;
+float servoPanPos = 45; // Startposisjon: 45 grader
+int servoPanMin = 5;
+int servoPanMax = 165;
+float delta = 0;
+ 
+float setpoint_pan = 45.0; // Startverdi for referanse
+float e_pan = 0.0;
+bool step_applied = false;
+ 
+unsigned long t0 = 0;
+unsigned long lastTime = 0;
+
+volatile long encoderCountPan = 0;
+volatile uint8_t lastEncodedPan = 0;
+
+// -------------------- Encoder Interrupts --------------------
+void IRAM_ATTR updateEncoderPan() {
+  bool MSB = digitalRead(ENC_PAN_A);
+  bool LSB = digitalRead(ENC_PAN_B);
+
+  uint8_t encoded = (MSB << 1) | LSB;
+  uint8_t sum = (lastEncodedPan << 2) | encoded;
+
+  if (sum == 0b0001 || sum == 0b0111 || sum == 0b1110 || sum == 0b1000) encoderCountPan++;
+  if (sum == 0b0010 || sum == 0b0100 || sum == 0b1101 || sum == 0b1011) encoderCountPan--;
+
+  lastEncodedPan = encoded;
+}
+ 
+// PI-klasse
+class PIController {
+    public:
+      PIController(float Kp, float Ki) {
+        this->Kp = Kp;
+        this->Ki = Ki;
+        this->integral = 0;
+      }
+ 
+      float compute(float error, float dt) {
+        if (abs(error) < 2) {
+          return 0;
+        }
+        float P_out = Kp * error;
+        float I_out = Ki * integral;
+ 
+        float output = P_out + I_out;
+ 
+        // Metning av ∆x for maksimal hastighet
+        //float maxDelta = maxSpeed * dt;
+        output = constrain(output, 5, 165);
+ 
+        // Clamping anti-windup: Bare integrer hvis ikke mettet
+        float unclamped_output = P_out + I_out;
+        if (output == unclamped_output) {
+          integral += error * dt;
+          integral = constrain(integral, -maxIntegral, maxIntegral);
+        }
+ 
+        return output;
+      }
+ 
+      void setMaxIntegral(float maxInt) {
+        maxIntegral = maxInt;
+      }
+ 
+    private:
+      float Kp, Ki;
+      float integral;
+      float maxIntegral = 100.0;
+  };
+ 
+PIController pid_pan(0.5, 0.5);
+ 
+void setup() {
+  Serial.begin(115200);
+  servoPan.attach(servoPanPin);
+  servoPan.write(5);
+  delay(1500);
+
+  pinMode(ENC_PAN_A, INPUT);
+  pinMode(ENC_PAN_B, INPUT);
+
+  bool A_pan = digitalRead(ENC_PAN_A);
+  bool B_pan = digitalRead(ENC_PAN_B);
+  lastEncodedPan = (A_pan << 1) | B_pan;
+
+  attachInterrupt(digitalPinToInterrupt(ENC_PAN_A), updateEncoderPan, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENC_PAN_B), updateEncoderPan, CHANGE);
+ 
+  Serial.println("Type 's' to start step input (45° → 90°)");
+}
+ 
+void loop() {
+  unsigned long now = millis();
+  float dt = (now - lastTime) / 1000.0;
+  lastTime = now;
+
+  long count_pan, count_tilt;
+  noInterrupts();
+  count_pan = encoderCountPan;
+  interrupts();
+  float PV_pan = -((360.0 * count_pan) / PPR);
+ 
+  if (Serial.available()) {
+    char c = Serial.read();
+    if (c == 's') {
+      setpoint_pan = 90.0; // Step til 90 grader
+      step_applied = true;
+      t0 = millis();
+      Serial.println("Step input applied (to 90°)");
+    }
+    if (c == 'r') {
+      setpoint_pan = 20.0;
+      step_applied = true;
+      Serial.println("Reset to 45°");
+    }
+  }
+
+
+  float t = (millis() - t0) / 1000.0;
+
+
+
+  
+  e_pan = setpoint_pan - PV_pan;
+  delta = pid_pan.compute(e_pan, dt);
+
+  servoPanPos = PV_pan + delta;
+  servoPanPos = constrain(delta, servoPanMin, servoPanMax);
+  servoPan.write(servoPanPos);
+
+
+    //Serial.print(""); Serial.print(t, 3);
+  Serial.print(", PV_pan: "); Serial.print(PV_pan, 2);
+  Serial.print(", SPos: "); Serial.print(servoPanPos, 2);
+  Serial.print(", PV+D: "); Serial.print((PV_pan + delta), 2);
+  Serial.print(", SP: "); Serial.print(setpoint_pan);
+  Serial.print(", E: "); Serial.print(e_pan, 2);
+  Serial.print(", D:"); Serial.println(delta, 2);
+ 
+   
+  delay(50); // 20 Hz
+}

@@ -50,7 +50,7 @@ def init_object_detection(zed):
         exit()
 
     obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
-    obj_runtime_param.detection_confidence_threshold = 70
+    obj_runtime_param.detection_confidence_threshold = 60
 
     return obj_param, obj_runtime_param
 
