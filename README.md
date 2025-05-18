@@ -48,7 +48,7 @@ This repository contains the code, models, and resources for the E2504 Bachelor 
     chmod +x RunContainer.sh # Make script executable
     ./RunContainer.sh # This will pull and create a Docker environment
     ```
-    
+
 ### Usage
 
 - To run YOLOv8 detection:
@@ -61,7 +61,7 @@ This repository contains the code, models, and resources for the E2504 Bachelor 
     ```
 - For full camera and gimbal integration:
     ```sh
-    python Programfiles/Yolo_DeepSort_CameraGimbal.py
+    python Programfiles/Yolo_CameraGimbal.py
     ```
 
 ## License
