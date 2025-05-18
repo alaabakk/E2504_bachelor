@@ -1,4 +1,4 @@
-# E2504_bachelor
+# Object Detection and Tracking Utilizing a ZED 2i Stereo Camera and a Two-Axis Gimbal
 
 ## Overview
 
