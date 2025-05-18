@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains the code, models, and resources for the E2504 Bachelor project at NTNU. The project involves 3D printing, object detection using YOLOv8, and tracking with DeepSort, with integration for camera gimbal control.
+This repository contains the code, models, and resources for the E2504 Bachelor project "Lone Wolf - Object Detection and Tracking Utilizing a ZED 2i Stereo Camera and a Two-Axis Gimbal" at NTNU. The project involves 3D printing, object detection using YOLOv8, and tracking with DeepSort, with integration for camera gimbal control.
 
 ## Repository Structure
 
