@@ -30,6 +30,7 @@ This repository contains the code, models, and resources for the E2504 Bachelor 
 ### Prerequisites
 
 - NVIDIA Jetson device (e.g., Orin Nano, Xavier, TX2, etc.) with JetPack 6.2 (L4T 36.4.3) or compatible
+- ZED 2i Stereo Camera + USB 3.0 (or higher) cable for camera connection
 - Docker installed for containerized setup
 - 3D printer for two-axis components (optional, for hardware assembly)
 
