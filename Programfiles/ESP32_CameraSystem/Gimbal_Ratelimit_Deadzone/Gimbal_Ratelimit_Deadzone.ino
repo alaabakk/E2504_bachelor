@@ -26,7 +26,7 @@ float camera_H_fov = 110.0; // horisontal FOV i grader
 float camera_V_fov = 95.0;  // vertikal FOV i grader
 
 float maxSpeed = 50.0; // grader per sekund
-float deadzone = 3.0;  // grader (ignorér små vinkelavvik)
+float deadzone = 2.0;  // grader (ignorér små vinkelavvik)
 
 // -------------------- Tidshåndtering --------------------
 unsigned long lastTime = 0;
@@ -34,8 +34,8 @@ unsigned long lastTime = 0;
 void setup() {
   Serial.begin(115200);
 
-  servoPan.attach(servoPanPin);
-  servoTilt.attach(servoTiltPin);
+  servoPan.attach(servoPanPin, 620, 2420);
+  servoTilt.attach(servoTiltPin, 620, 2420);
 
   // Sett servoene til midtstilling
   servoPan.write(servoPanPos);
