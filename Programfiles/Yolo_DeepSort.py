@@ -101,10 +101,16 @@ def my_callback(inp):
         selected_object = inp
 
 def calculateDistance(middle, depth_map):
-    # Calculate the distance to the center of the object using the depth map
-    depth_value = depth_map.get_value(middle[0], middle[1])
-    distance = depth_value[1]
+    # Get the depth value at the center of the object
+    if middle[0] <= 0 and middle[0] >= 1280 and middle[1] <= 0 and middle[1] >= 720:
+        depth_value = depth_map.get_value(middle[0], middle[1])
+        distance = depth_value[1]
+    else:
+        distance = 0.0
+
     return distance
+
+
 
 def process_yolo_results(detections, tracking_ids, boxes, img_cv, depth_map):
     # Process YOLO detection results and draw bounding boxes

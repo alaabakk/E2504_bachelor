@@ -133,8 +133,11 @@ def my_callback(inp, ser):
 
 def calculateDistance(middle, depth_map):
     # Get the depth value at the center of the object
-    depth_value = depth_map.get_value(middle[0], middle[1])
-    distance = depth_value[1]
+    if middle[0] <= 0 and middle[0] >= 1280 and middle[1] <= 0 and middle[1] >= 720:
+        depth_value = depth_map.get_value(middle[0], middle[1])
+        distance = depth_value[1]
+    else:
+        distance = 0.0
 
     return distance
 
