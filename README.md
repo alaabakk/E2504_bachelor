@@ -40,8 +40,8 @@ This repository contains the code, models, and resources for the E2504 Bachelor 
 
 2. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/E2504_bachelor.git
-    cd E2504_bachelor
+    git clone https://github.com/alaabakk/Object_Detection_and_Tracking_ZED_2i_E2504.git
+    cd Object_Detection_and_Tracking_ZED_2i_E2504
     ```
 
 3. Build and run with Docker for NVIDIA Jetson platforms:
